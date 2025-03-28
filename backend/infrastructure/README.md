@@ -13,10 +13,10 @@ architecture-beta
     service api_gateway(server)[API Gateway] in gateway
     service auth_proxy(server)[OAuth2 Proxy] in gateway
     service keycloak(server)[Keycloak] in gateway
+    service user_db(database)[User DB] in gateway
 
     group backend(server)[Backend]
     service user_service(server)[User service] in backend
-    service user_db(database)[User DB] in backend
     service project_service(server)[Project service] in backend
     service project_db(database)[Project DB] in backend
     service report_service(server)[Report service] in backend
@@ -40,7 +40,7 @@ architecture-beta
     api_gateway:T -- B:auth_proxy
     auth_proxy:T -- B:keycloak
     keycloak:R -- L:user_service
-    user_db:B -- T:user_service
+    user_db:B -- T:keycloak
     project_db:B -- T:project_service
     report_db:B -- T:report_service
     document_db:B -- T:document_service
