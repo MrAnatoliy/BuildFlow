@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+authlib
+httpx
+itsdangerous
+pydantic
