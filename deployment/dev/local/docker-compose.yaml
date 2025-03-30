@@ -1,14 +1,106 @@
 name: "buildflow_dev_local"
 
 services:
-  api_gateway:
-    container_name: traefik-api-gateway
+  traefik:
     image: traefik:v3.3
     command: 
+      --entrypoints.web.address=:80
       --api.insecure=true
+      --log.level=DEBUG
       --providers.docker
     ports:
       - "80:80"
-      - "8080:8080"
+      - "9000:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      #OAuth
+      - "traefik.http.middlewares.oauth-auth.forwardauth.address=http://oauth2-proxy:4180/oauth2/auth"
+      - "traefik.http.middlewares.oauth-auth.forwardauth.trustForwardHeader=true"
+
+      #CORS
+      - "traefik.http.middlewares.cors.headers.accesscontrolallowheaders=*"
+      - "traefik.http.middlewares.cors.headers.accesscontrolallowheaders=Content-Type,Authorization,X-Requested-With,Origin,Accept"
+      - "traefik.http.middlewares.cors.headers.accesscontrolallowmethods=*"
+      - "traefik.http.middlewares.cors.headers.accesscontrolalloworiginlist=http://26.190.118.118,http://buildflow.api,http://localhost:3000,http://localhost:8080"
+      - "traefik.http.middlewares.cors.headers.accesscontrolallowcredentials=true"
+      - "traefik.http.middlewares.cors.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.cors.headers.addvaryheader=true"
+    networks:
+      - keycloak-network
+  
+  oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:latest
+    ports:
+      - 4180:4180
+    environment:
+      - OAUTH2_PROXY_PROVIDER=keycloak-oidc
+      - OAUTH2_PROXY_CLIENT_ID=oauth2-proxy
+      - OAUTH2_PROXY_CLIENT_SECRET=jC5HR0M5E28gR7jzNyV8vAbGwriRQMnU
+      - OAUTH2_PROXY_COOKIE_SECRET=TTRTItPkAcgOpboHN6drOcV8ZOtGpbZKcjOFn2HHEm4=
+      - OAUTH2_PROXY_REDIRECT_URL=http://buildflow.api/oauth2/callback
+      - OAUTH2_PROXY_OIDC_ISSUER_URL=http://keycloak:8080/realms/buildflow-realm
+      - OAUTH2_PROXY_EMAIL_DOMAINS=*
+      - OAUTH2_PROXY_CODE_CHALLENGE_METHOD=S256
+      - OAUTH2_PROXY_HTTP_ADDRESS=0.0.0.0:4180
+    networks:
+      - keycloak-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.1.4
+    command: start-dev --import-realm --features=scripts,preview --log-level="INFO"
+    ports:
+      - 8080:8080
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+    volumes:
+      - ../../../backend/infrastructure/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
+    networks:
+      - keycloak-network
+
+  rabbitmq:
+    image: rabbitmq:4.0-management
+    ports:
+      - 5672:5672
+      - 15672:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - keycloak-network
+
+  whoami:
+    image: traefik/whoami
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.whoami.rule=Host(buildflow.api)
+      - traefik.http.routers.whoami.rule=PathPrefix(`/whoami`)
+      - traefik.http.routers.whoami.entrypoints=web
+      - traefik.http.routers.whoami.middlewares=oauth-auth
+      - traefik.http.routers.whoami.middlewares=cors
+      - traefik.http.routers.whoami.service=whoami-service
+      - traefik.http.services.whoami-service.loadbalancer.server.port=80
+    networks:
+      - keycloak-network
+
+  auth_service:
+    build:
+      context: ../../../backend/services/auth_service
+    container_name: auth_service
+    ports:
+      - 8000:8000
+    networks:
+      - keycloak-network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.auth_service.rule=Host(buildflow.api)
+      - traefik.http.routers.auth_service.rule=PathPrefix(`/auth`)
+      - traefik.http.routers.auth_service.entrypoints=web
+      - traefik.http.routers.auth_service.middlewares=cors
+      - traefik.http.routers.auth_service.service=auth-service
+      - traefik.http.services.auth-service.loadbalancer.server.port=8000
+
+networks:
+  keycloak-network:
+    driver: bridge
