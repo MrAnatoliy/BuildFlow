@@ -1,0 +1,5 @@
+@import "tailwindcss"; /* https://dev.to/mlaposta/fix-unknown-at-rule-tailwind-errors-in-vs-code-208f */
+@plugin "daisyui" { 
+  themes: all;
+}
+
