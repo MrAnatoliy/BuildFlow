@@ -730,7 +730,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "**********",
+      "secret": "y9uhXHRRsiJvcy4KWkYUX8M3tlNyqEK1",
       "redirectUris": [
         "/*"
       ],
@@ -790,7 +790,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "**********",
+      "secret": "GlDkVI6WXTOKARMuf6t1l28ydj4QaQKd",
       "redirectUris": [
         "/*"
       ],
@@ -919,7 +919,7 @@
       "enabled": true,
       "alwaysDisplayInConsole": false,
       "clientAuthenticatorType": "client-secret",
-      "secret": "**********",
+      "secret": "jC5HR0M5E28gR7jzNyV8vAbGwriRQMnU",
       "redirectUris": [
         "http://buildflow.api/oauth2/callback"
       ],
