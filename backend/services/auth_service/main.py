@@ -1,13 +1,24 @@
 import logging
-from fastapi import FastAPI, HTTPException, Header, Response
+from fastapi import FastAPI, HTTPException, Header, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import httpx
+from celery import Celery
+from uuid import uuid4
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("auth_service")
+
+celery = Celery(
+    'auth_service',
+    broker='amqp://guest:guest@rabbitmq//',
+    backend='rpc://'
+)
+
+# FOR DEVELOPMENT ONLY MAKE A REAL TOKEN STORE MF
+token_store = {}
 
 app = FastAPI()
 
@@ -134,7 +145,65 @@ async def register(reg_req: RegistrationRequest):
         raise HTTPException(status_code=response.status_code, detail="User registration failed")
     
     logger.info("User registered successfully: %s", reg_req.username)
+
+    verification_token = str(uuid4())
+    token_store[verification_token] = reg_req.username
+    logger.info(
+        f'Sending task for send verification eamil for user {reg_req.username} {reg_req.firstName} {reg_req.lastName}\ntoken : {verification_token}'
+    )
+
+    celery.send_task(
+        "mail_service.tasks.send_verification_email",
+        args=[reg_req.firstName, reg_req.lastName, reg_req.email, verification_token]
+    )
+
     return {"detail": "User registered successfully"}
+
+@app.get("/auth/verify-email")
+async def verify_email(token: str = Query(...)):
+    """
+    Verifies a user's email using a verification token.
+    """
+    logger.debug(f"Verifying email with token: {token}")
+
+    if token not in token_store:
+        logger.warning(f"Invalid or expired token: {token}")
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+
+    username = token_store.pop(token)
+    logger.info(f"Found user '{username}' for token: {token}")
+
+    admin_token = await get_admin_token()
+
+    # First, find the user ID in Keycloak
+    user_search_url = f"{KEYCLOAK_BASE_URL}/admin/realms/{REALM}/users"
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            user_search_url,
+            headers={"Authorization": f"Bearer {admin_token}"},
+            params={"username": username}
+        )
+
+        if response.status_code != 200 or not response.json():
+            logger.error(f"User not found or error searching for user: {username}")
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user_id = response.json()[0]["id"]
+
+        # Now update the user's emailVerified field
+        user_url = f"{KEYCLOAK_BASE_URL}/admin/realms/{REALM}/users/{user_id}"
+        response = await client.put(
+            user_url,
+            headers={"Authorization": f"Bearer {admin_token}", "Content-Type": "application/json"},
+            json={"emailVerified": True}
+        )
+
+        if response.status_code != 204:
+            logger.error(f"Failed to verify email for user {username}: {response.text}")
+            raise HTTPException(status_code=500, detail="Failed to verify email")
+
+    logger.info(f"Email successfully verified for user: {username}")
+    return {"detail": f"Email verified for user: {username}"}
 
 @app.get("/auth/userinfo")
 async def userinfo(authorization: str = Header(...)):

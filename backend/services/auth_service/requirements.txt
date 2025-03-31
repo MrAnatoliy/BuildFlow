@@ -4,3 +4,4 @@ authlib
 httpx
 itsdangerous
 pydantic
+celery
