@@ -1,0 +1,16 @@
+<!-- templates/verification_email.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Verify Your Email</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f8f9fa; padding: 20px;">
+  <div style="max-width: 600px; margin: auto; background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+    <h2 style="color: #333;">Welcome, {{ first_name }} {{ last_name }} 👋</h2>
+    <p style="color: #555;">Thanks for signing up! Please click the button below to verify your email address and activate your account.</p>
+    <a href="{{ verification_link }}" style="display: inline-block; background-color: #0066ff; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; margin-top: 20px;">Verify Email</a>
+    <p style="margin-top: 30px; font-size: 12px; color: #aaa;">If you didn’t request this email, you can safely ignore it.</p>
+  </div>
+</body>
+</html>

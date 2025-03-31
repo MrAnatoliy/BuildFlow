@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+authlib
+httpx
+itsdangerous
+pydantic
+aio_pika
+celery
+Jinja2
