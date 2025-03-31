@@ -1,0 +1,1 @@
+# Client secrets are only for dev mode (obviously)
