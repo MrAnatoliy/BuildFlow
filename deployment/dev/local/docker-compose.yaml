@@ -70,6 +70,26 @@ services:
     networks:
       - keycloak-network
 
+  flower:
+    image: mher/flower
+    ports:
+      - 5555:5555
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq//
+    command: celery --broker=amqp://guest:guest@rabbitmq// flower
+    networks:
+      - keycloak-network
+
+  # LOCAL MAIL SERVER
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    ports:
+      - "1025:1025"   # SMTP port
+      - "8025:8025"   # Web UI port
+    networks:
+      - keycloak-network
+
   whoami:
     image: traefik/whoami
     labels:
@@ -100,6 +120,13 @@ services:
       - traefik.http.routers.auth_service.middlewares=cors
       - traefik.http.routers.auth_service.service=auth-service
       - traefik.http.services.auth-service.loadbalancer.server.port=8000
+
+  mail_service:
+    build:
+      context: ../../../backend/services/mail_service
+    container_name: mail_service
+    networks:
+      - keycloak-network
 
 networks:
   keycloak-network:
