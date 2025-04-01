@@ -65,7 +65,7 @@ const MENU = {
     DEPENDENCIES: ICO.dependencies + 'Обновить Dependencies',
     DEV_DEPENDENCIES: ICO.dev_dependencies + 'Обновить Dev Dependencies',
     OVERRIDES: ICO.overrides + 'Обновить Overrides',
-    UPDATE_ALL: ICO.update + `Обновить все зависимости | ${ICO.warning}Экспериментальная функция ${ICO.warning}`,
+    UPDATE_ALL: ICO.update + 'Обновить все зависимости',
     GO_BACK: ICO.go_back + 'Вернуться'
   },
   TABLE: {

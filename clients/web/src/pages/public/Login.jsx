@@ -3,43 +3,37 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../provider/authProvider'
 
 const Login = () => {
-
   const [formData, setFormData] = useState({
     username: '',
     password: ''
   });
 
   const [error, setError] = useState('');
-  const [serverError, setServerError] = useState('')
   const { login, isLoading } = useAuth();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
-    if (error[name]) {
-      setError(prev => ({ ...prev, [name]: '' }));
-    }
+    // Сбрасываем ошибку при изменении поля
+    if (error) setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setServerError('');
     setError('');
 
     try {
-      const { confirmPassword, ...LoginData } = formData;
+      const result = await login(formData);
       
-      const response = await login(LoginData, { headers: { 'Content-Type': 'application/json' } });
-      if (response.status === 200) {
+      if (result.success) {
         navigate('/profile');
       } else {
-        setError(response.error || 'Неверные учетные данные');
+        setError(result.error || 'Неверные учетные данные');
       }
     } catch (err) {
-      setError(err.message || 'Ошибка соединения с сервером');
+      setError('Ошибка соединения с сервером');
     }
   };
 
@@ -69,6 +63,7 @@ const Login = () => {
                 value={formData.username}
                 onChange={handleChange}
                 autoComplete="username"
+                disabled={isLoading}
               />
             </div>
 
@@ -85,6 +80,7 @@ const Login = () => {
                 value={formData.password}
                 onChange={handleChange}
                 autoComplete="current-password"
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -92,9 +88,10 @@ const Login = () => {
           <div>
             <button
               type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              disabled={isLoading}
             >
-              Войти
+              {isLoading ? 'Выполняется вход...' : 'Войти'}
             </button>
           </div>
         </form>

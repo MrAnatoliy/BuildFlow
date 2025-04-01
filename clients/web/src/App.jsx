@@ -11,10 +11,12 @@ import "./assets/css/app.css";
 function App() {
   return (
     <>
-      <AuthProvider>
-        <Header />
-        <RouterProvider router={router} />
-      </AuthProvider>
+      <React.StrictMode>
+        <AuthProvider>
+          <Header />
+          <RouterProvider router={router} />
+        </AuthProvider>
+      </React.StrictMode>
     </>
   )
 }
