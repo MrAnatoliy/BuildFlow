@@ -2,13 +2,13 @@ import { useAuth } from '../provider/authProvider';
 import { Navigate, Outlet } from 'react-router-dom';
 
 const ProtectedRoute = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuth, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>Loading...</div>; // Лоадер пока проверяется авторизация
   }
 
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+  return isAuth ? chi : <Navigate to="/login" replace />;
 };
 
 export default ProtectedRoute;

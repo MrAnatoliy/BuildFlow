@@ -20,6 +20,10 @@ const router = createBrowserRouter([
         element: <div>Collaboration Page</div>,
       },
       {
+        path: "/promo",
+        element: <div>Collaboration Page</div>,
+      },
+      {
         path: "/login",
         element: <Login />,
       },

@@ -1,4 +1,4 @@
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../provider/authProvider';
 
 const Profile = () => {
     const { user, logout } = useAuth();

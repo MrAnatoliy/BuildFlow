@@ -14,6 +14,7 @@ dist
 dist-ssr
 *.local
 pcv_backups
+last_src
 
 # Editor directories and files
 .vscode/*
