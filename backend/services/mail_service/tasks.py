@@ -20,7 +20,7 @@ def send_verification_email(firstName, lastName, email_address, verification_tok
 
     msg = MIMEMultipart("alternative")
     msg["Subject"] = "Welcome to BuildFlow! Verify Your Email"
-    msg["From"] = "noreply@buildflow.dev"
+    msg["From"] = "TolikOverTCP@yandex.ru"
     msg["To"] = email_address
 
     # Attach the HTML body
@@ -36,8 +36,8 @@ def send_verification_email(firstName, lastName, email_address, verification_tok
     # try:
     #     # Connect to the Yandex SMTP server using SSL
     #     with smtplib.SMTP_SSL('smtp.yandex.ru', 465) as server:
-    #         server.login('TolikOverTCP@yandex.ru', 'twniwobohajbzeat')
-    #         server.sendmail("noreply@buildflow.dev", email_address, msg.as_string())
+    #         server.login('TolikOverTCP', 'twniwobohajbzeat')
+    #         server.sendmail("TolikOverTCP@yandex.ru", email_address, msg.as_string())
     #     print("Email sent successfully!")
     # except Exception as e:
     #     print("Error sending email:", e)
