@@ -304,8 +304,8 @@ def set_tokens_cookies(response: Response, tokens: dict):
         key="access_token",
         value=tokens["access_token"],
         httponly=True,
-        secure=False,  # В production должно быть True
-        samesite="none",
+        secure=True,  # В production должно быть True
+        samesite="lax",
         max_age=tokens.get("expires_in", 180)  # 3 минуты по умолчанию
     )
     
@@ -314,8 +314,8 @@ def set_tokens_cookies(response: Response, tokens: dict):
             key="refresh_token",
             value=tokens["refresh_token"],
             httponly=True,
-            secure=False,
-            samesite="none",
+            secure=True,
+            samesite="lax",
             max_age=12 * 60 * 60  # 12 часов
         )
 
@@ -324,7 +324,7 @@ def set_tokens_cookies(response: Response, tokens: dict):
             key="id_token",
             value=tokens["id_token"],
             httponly=True,
-            secure=False,
-            samesite="none",
+            secure=True,
+            samesite="lax",
             max_age=12 * 60 * 60
         )
