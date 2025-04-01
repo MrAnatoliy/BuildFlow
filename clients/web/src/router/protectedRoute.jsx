@@ -1,5 +1,5 @@
 import { useAuth } from '../provider/authProvider';
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 
 const ProtectedRoute = () => {
   const { isAuth, isLoading } = useAuth();
@@ -8,7 +8,7 @@ const ProtectedRoute = () => {
     return <div>Loading...</div>; // Лоадер пока проверяется авторизация
   }
 
-  return isAuth ? chi : <Navigate to="/login" replace />;
+  return isAuth ? children : <Navigate to="/login" replace />;
 };
 
 export default ProtectedRoute;
