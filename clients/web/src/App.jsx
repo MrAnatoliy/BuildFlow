@@ -10,14 +10,10 @@ import "./assets/css/app.css";
 
 function App() {
   return (
-    <>
-      <React.StrictMode>
-        <AuthProvider>
-          <Header />
-          <RouterProvider router={router} />
-        </AuthProvider>
-      </React.StrictMode>
-    </>
+    <AuthProvider>
+      <Header />
+      <RouterProvider router={router} />
+    </AuthProvider>
   )
 }
 

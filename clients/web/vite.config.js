@@ -2,8 +2,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import tailwindcss from '@tailwindcss/vite'
 
-// https://vite.dev/config/
 export default defineConfig({
+  
   plugins: [
     tailwindcss(),
     react()
@@ -12,13 +12,19 @@ export default defineConfig({
   server: {
     host: '26.190.118.118',
     port: 80,
+    /*
+    https: {
+      key: fs.readFileSync(path.resolve(__dirname, 'ssl/buildflow.org-key.pem')),
+      cert: fs.readFileSync(path.resolve(__dirname, 'ssl/buildflow.org.pem'))
+    },
+    */
     proxy: {
       '/api': {
         target: 'http://buildflow.api',
         changeOrigin: true,
         secure: false,
-        withCredentials: true,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        withCredentials: false,
+        rewrite: (path) => path.replace(/^\/api/, ''),
       }
     }
   },

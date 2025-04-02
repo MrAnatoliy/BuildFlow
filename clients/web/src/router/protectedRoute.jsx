@@ -5,10 +5,10 @@ const ProtectedRoute = () => {
   const { isAuth, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div>Loading...</div>; // Лоадер пока проверяется авторизация
+    return <div>Загрузка...</div>;
   }
 
-  return isAuth ? chi : <Navigate to="/login" replace />;
+  return isAuth ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
 export default ProtectedRoute;
