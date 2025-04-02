@@ -26,3 +26,8 @@ last_src
 *.njsproj
 *.sln
 *.sw?
+
+# SSL-файлы
+*.pem
+*.key
+ssl/

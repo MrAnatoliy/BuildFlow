@@ -1,179 +1,227 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import mem from "mem";
 import axios from 'axios';
-
-axios.defaults.withCredentials = true;
-axios.defaults.baseURL = 'http://buildflow.api';
+import * as jwtDecode from 'jwt-decode';
 
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
+
+  axios.defaults.withCredentials = false;
+  axios.defaults.baseURL = 'http://buildflow.api';
+
   const [isAuth, setAuth] = useState(false);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const getCookie = (name) => {
-    return document.cookie
-      .split('; ')
-      .find(row => row.startsWith(`${name}=`))
-      ?.split('=')[1];
+  // Получение данных пользователя из id токена
+  const getUserFromToken = (idToken) => {
+    if (!idToken) return null;
+    try {
+      return jwtDecode.jwtDecode(idToken);
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
+    }
   };
 
-  const checkAuth = useCallback(async () => {
-    try {
-      const accessToken = getCookie('access_token');
-      
-      if (!accessToken) {
-        throw new Error('No access token');
-      }
-  
-      const { data } = await axios.get('/auth/userinfo', {
-        headers: {
-          Authorization: `Bearer ${accessToken}`
-        }
-      });
-      
-      setUser(data);
-      setAuth(true);
-    } catch (error) {
-      setAuth(false);
-      setUser(null);
-      
-      document.cookie = 'access_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-      document.cookie = 'refresh_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-    } finally {
-      setIsLoading(false);
+  const getSession = () => {
+    const session = localStorage.getItem('session') || sessionStorage.getItem('session');
+    return session ? JSON.parse(session) : null;
+  };
+
+  const saveSession = (tokens, rememberMe = false) => {
+    console.log('Saving tokens:', tokens);
+    
+    if (!tokens?.accessToken || !tokens?.refreshToken || !tokens?.idToken) {
+      console.error('Invalid tokens provided');
+      return;
     }
-  }, []);
-
-  const refreshTokenFn = mem(
-    async () => {
-      try {
-        const refreshToken = getCookie('refresh_token');
-        
-        if (!refreshToken) {
-          throw new Error('No refresh token');
-        }
-
-        const response = await axios.post("/auth/refresh", 
-          { refresh_token: refreshToken },
-          { headers: { 'Content-Type': 'application/json' } }
-        );
   
-        // Проверяем обновление кук
-        const newAccessToken = getCookie('access_token');
-        if (!newAccessToken) {
-          throw new Error('Token refresh failed');
-        }
+    const session = {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      idToken: tokens.idToken
+    };
   
-        await checkAuth();
-        return true;
-      } catch (error) {
-        setAuth(false);
-        setUser(null);
-        return false;
-      }
-    },
-    { maxAge: 10000 }
-  );
+    const storage = rememberMe ? localStorage : sessionStorage;
+    console.log(`Using ${rememberMe ? 'localStorage' : 'sessionStorage'}`);
+    
+    storage.setItem('session', JSON.stringify(session));
+  
+    const userData = getUserFromToken(tokens.idToken);
+    if (userData) {
+      storage.setItem('user', JSON.stringify(userData));
+      setUser(userData);
+    }
+  
+    setAuth(true);
+  };
+  const clearSession = () => {
+    localStorage.removeItem('session');
+    localStorage.removeItem('user');
+    sessionStorage.removeItem('session');
+    sessionStorage.removeItem('user');
+    setAuth(false);
+    setUser(null);
+  };
+
+  const handleRefreshToken = async () => {
+    const session = getSession();
+    if (!session?.refreshToken) {
+      clearSession();
+      return null;
+    }
+
+    try {
+      const response = await axios.post('/auth/refresh', {
+        refreshToken: session.refreshToken
+      });
+
+      const { accessToken, refreshToken, idToken } = response.data;
+      saveSession({ accessToken, refreshToken, idToken }, !!localStorage.getItem('session'));
+      return accessToken;
+    } catch (error) {
+      clearSession();
+      return null;
+    }
+  };
+
+
+  const memoizedRefreshToken = mem(handleRefreshToken, {
+    maxAge: 10000 // 10 секунд
+  });
+
 
   useEffect(() => {
-    const requestInterceptor = axios.interceptors.request.use(config => {
-      const accessToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('access_token='))
-        ?.split('=')[1];
-    
-      if (accessToken) {
-        config.headers.Authorization = `Bearer ${accessToken}`;
-      }
-      
-      return config;
-    });
-  
+
+    const requestInterceptor = axios.interceptors.request.use(
+      async (config) => {
+        const session = getSession();
+        if (session?.accessToken) {
+          config.headers.Authorization = `Bearer ${session.accessToken}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+
     const responseInterceptor = axios.interceptors.response.use(
-      response => response,
-      async error => {
+      (response) => response,
+      async (error) => {
         const originalRequest = error.config;
         
-        // Обрабатываем только 401 ошибки
         if (error.response?.status === 401 && !originalRequest._retry) {
           originalRequest._retry = true;
           
-          try {
-            const newAccessToken = await refreshTokenFn();
-            if (newAccessToken) {
-              originalRequest.headers.Authorization = `Bearer ${getCookie('access_token')}`;
-              return axios(originalRequest);
-            }
-          } catch (refreshError) {
-            console.error('Refresh token failed:', refreshError);
+          const newAccessToken = await memoizedRefreshToken();
+          if (newAccessToken) {
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            return axios(originalRequest);
           }
         }
         
         return Promise.reject(error);
       }
     );
-  
-    checkAuth();
-  
+
     return () => {
       axios.interceptors.request.eject(requestInterceptor);
       axios.interceptors.response.eject(responseInterceptor);
     };
-  }, [checkAuth, refreshTokenFn]);
+  }, []);
 
-  const login = async (credentials) => {
+  useEffect(() => {
+    const initializeAuth = async () => {
+      const session = getSession();
+      if (session?.accessToken) {
+        try {
+          const decoded = jwtDecode.jwtDecode(session.accessToken);
+          if (decoded.exp * 1000 > Date.now()) {
+            setAuth(true);
+            setUser(getUserFromToken(session.idToken));
+          } else {
+            await handleRefreshToken();
+          }
+        } catch (error) {
+          console.error('Token validation error:', error);
+          clearSession();
+        }
+      }
+      setIsLoading(false);
+    };
+
+    initializeAuth();
+  }, []);
+
+  const login = async (credentials, rememberMe = false) => {
     try {
       setIsLoading(true);
-      
       const response = await axios.post('/auth/login', credentials);
-      const { access_token, refresh_token } = response.data;
-    
-      document.cookie = `access_token=${access_token}; Path=/; Secure; SameSite=None`;
-      document.cookie = `refresh_token=${refresh_token}; Path=/; Secure; SameSite=None`;
       
-      await checkAuth();
+      const { accessToken, refreshToken, idToken } = response.data;
+      saveSession({ accessToken, refreshToken, idToken }, rememberMe);
       
-      return { success: true };
+      return { 
+        success: true,
+        data: response.data,
+        status: response.status
+      };
     } catch (error) {
       console.error('Login error:', error);
       return { 
-        success: false, 
-        error: error.response?.data?.message || 'Login failed' 
+        success: false,
+        error: error.response?.data?.message || 'Login failed',
+        status: error.response?.status
       };
     } finally {
       setIsLoading(false);
     }
   };
-
   const logout = async () => {
     try {
-      await axios.post('/auth/logout');
+      const session = getSession();
+      if (session?.refreshToken) {
+
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
     } finally {
-      setAuth(false);
-      setUser(null);
+      clearSession();
     }
   };
 
-  const value = {
-    isAuth,
-    user,
-    isLoading,
-    login,
-    logout
-  };
+  const checkAuth = useCallback(async () => {
+    const session = getSession();
+    if (!session?.accessToken) {
+      return false;
+    }
+
+    try {
+      await axios.get('/auth/check');
+      return true;
+    } catch (error) {
+      if (error.response?.status === 401) {
+        return await handleRefreshToken() !== null;
+      }
+      return false;
+    }
+  }, []);
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{
+      isAuth,
+      user,
+      isLoading,
+      login,
+      logout,
+      checkAuth,
+      getSession
+    }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => useContext(AuthContext);
-
 export default AuthProvider;
-
-
-

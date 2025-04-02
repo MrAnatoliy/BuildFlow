@@ -1,39 +1,41 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../provider/authProvider'
 
 const Login = () => {
+  const { login, isLoading } = useAuth();
+  const [rememberMe, setRememberMe] = useState(false);
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     username: '',
     password: ''
   });
 
   const [error, setError] = useState('');
-  const { login, isLoading } = useAuth();
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
-    // Сбрасываем ошибку при изменении поля
-    if (error) setError('');
+    setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
-    try {
-      const result = await login(formData);
-      
-      if (result.success) {
-        navigate('/profile');
-      } else {
+    
+    const result = await login(formData, rememberMe);
+    
+    if (result.success) {
+      console.log('Login successful:', result.data);
+      navigate('/profile');
+    } else {
+      if (result.status === 401) {
         setError(result.error || 'Неверные учетные данные');
+      } else {
+        setError('Произошла ошибка при входе');
       }
-    } catch (err) {
-      setError('Ошибка соединения с сервером');
+      console.error('Login error:', result.error);
     }
   };
 
@@ -83,6 +85,20 @@ const Login = () => {
                 disabled={isLoading}
               />
             </div>
+
+            <div className="flex items-center">
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                Запомнить меня
+              </label>
+            </div>
           </div>
 
           <div>
@@ -100,4 +116,4 @@ const Login = () => {
   )
 }
 
-export default Login
+export default Login;
