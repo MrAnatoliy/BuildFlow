@@ -7,7 +7,7 @@ const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
 
-  axios.defaults.withCredentials = false;
+  axios.defaults.withCredentials = true;
   axios.defaults.baseURL = 'http://buildflow.api';
 
   const [isAuth, setAuth] = useState(false);
@@ -31,32 +31,34 @@ const AuthProvider = ({ children }) => {
   };
 
   const saveSession = (tokens, rememberMe = false) => {
-    console.log('Saving tokens:', tokens);
+    console.log('Saving session with tokens:', tokens);
     
-    if (!tokens?.accessToken || !tokens?.refreshToken || !tokens?.idToken) {
-      console.error('Invalid tokens provided');
+    if (!tokens?.accessToken) {
+      console.error('Access token is required');
       return;
     }
   
     const session = {
       accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
-      idToken: tokens.idToken
+      refreshToken: tokens.refreshToken || '', // может быть необязательным
+      idToken: tokens.idToken || tokens.accessToken // fallback
     };
   
     const storage = rememberMe ? localStorage : sessionStorage;
-    console.log(`Using ${rememberMe ? 'localStorage' : 'sessionStorage'}`);
-    
     storage.setItem('session', JSON.stringify(session));
   
-    const userData = getUserFromToken(tokens.idToken);
-    if (userData) {
+    try {
+      const userData = jwtDecode.jwtDecode(session.idToken);
       storage.setItem('user', JSON.stringify(userData));
       setUser(userData);
+      setAuth(true);
+      console.log('Session saved successfully');
+    } catch (error) {
+      console.error('Failed to decode user data:', error);
+      setAuth(true); // все равно считаем авторизованным, если есть accessToken
     }
-  
-    setAuth(true);
   };
+
   const clearSession = () => {
     localStorage.removeItem('session');
     localStorage.removeItem('user');
@@ -72,21 +74,33 @@ const AuthProvider = ({ children }) => {
       clearSession();
       return null;
     }
-
+  
     try {
       const response = await axios.post('/auth/refresh', {
-        refreshToken: session.refreshToken
+        refresh_token: session.refreshToken // Учитываем формат сервера
       });
-
-      const { accessToken, refreshToken, idToken } = response.data;
-      saveSession({ accessToken, refreshToken, idToken }, !!localStorage.getItem('session'));
-      return accessToken;
+  
+      // Обрабатываем ответ в том же формате, что и при логине
+      const { access_token, refresh_token, id_token } = response.data;
+      
+      if (!access_token) {
+        throw new Error('Не получен новый access token');
+      }
+  
+      const tokens = {
+        accessToken: access_token,
+        refreshToken: refresh_token || session.refreshToken, // Используем старый, если новый не пришел
+        idToken: id_token || session.idToken
+      };
+  
+      saveSession(tokens, !!localStorage.getItem('session'));
+      return tokens.accessToken;
     } catch (error) {
+      console.error('Refresh token error:', error);
       clearSession();
       return null;
     }
   };
-
 
   const memoizedRefreshToken = mem(handleRefreshToken, {
     maxAge: 10000 // 10 секунд
@@ -134,23 +148,37 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       const session = getSession();
+      console.log('Initial session from storage:', session);
+  
       if (session?.accessToken) {
         try {
+          // Декодируем accessToken для проверки срока действия
           const decoded = jwtDecode.jwtDecode(session.accessToken);
-          if (decoded.exp * 1000 > Date.now()) {
+          console.log('Decoded token info:', decoded);
+  
+          const isTokenValid = decoded.exp * 1000 > Date.now();
+          console.log(`Token is ${isTokenValid ? 'valid' : 'expired'}`);
+  
+          if (isTokenValid) {
             setAuth(true);
-            setUser(getUserFromToken(session.idToken));
+            // Если есть idToken - декодируем пользователя
+            if (session.idToken) {
+              const userData = jwtDecode.jwtDecode(session.idToken);
+              setUser(userData);
+              console.log('User data from idToken:', userData);
+            }
           } else {
+            console.log('Token expired, attempting refresh...');
             await handleRefreshToken();
           }
         } catch (error) {
-          console.error('Token validation error:', error);
+          console.error('Token validation failed:', error);
           clearSession();
         }
       }
       setIsLoading(false);
     };
-
+  
     initializeAuth();
   }, []);
 
@@ -158,10 +186,29 @@ const AuthProvider = ({ children }) => {
     try {
       setIsLoading(true);
       const response = await axios.post('/auth/login', credentials);
-      
-      const { accessToken, refreshToken, idToken } = response.data;
-      saveSession({ accessToken, refreshToken, idToken }, rememberMe);
-      
+      console.log('Login response:', response.data);
+  
+      const tokens = {
+        accessToken: response.data.access_token,
+        refreshToken: response.data.refresh_token,
+        idToken: response.data.id_token || response.data.access_token
+      };
+  
+      if (!tokens.accessToken) {
+        throw new Error('Access token is missing in response');
+      }
+  
+      // Сохраняем сессию и ждем завершения
+      await new Promise(resolve => {
+        saveSession(tokens, rememberMe);
+        resolve();
+      });
+  
+      // Явно обновляем состояние перед возвратом
+      setAuth(true);
+      const userData = getUserFromToken(tokens.idToken);
+      setUser(userData);
+  
       return { 
         success: true,
         data: response.data,
@@ -171,24 +218,40 @@ const AuthProvider = ({ children }) => {
       console.error('Login error:', error);
       return { 
         success: false,
-        error: error.response?.data?.message || 'Login failed',
+        error: error.response?.data?.message || error.message || 'Login failed',
         status: error.response?.status
       };
     } finally {
       setIsLoading(false);
     }
   };
-  const logout = async () => {
-    try {
-      const session = getSession();
-      if (session?.refreshToken) {
 
-      }
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      clearSession();
-    }
+  const logout = () => {
+    // 1. Очищаем все хранилища
+    localStorage.removeItem('session');
+    localStorage.removeItem('user');
+    sessionStorage.removeItem('session');
+    sessionStorage.removeItem('user');
+  
+    // 2. Дополнительная очистка на случай, если данные хранились под другими ключами
+    const authKeys = ['token', 'auth', 'accessToken', 'refreshToken', 'idToken'];
+    authKeys.forEach(key => {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    });
+  
+    // 3. Очищаем состояние приложения
+    setAuth(false);
+    setUser(null);
+  
+    // 4. Очищаем cookies (если они использовались)
+    document.cookie.split(';').forEach(cookie => {
+      const [name] = cookie.split('=').map(s => s.trim());
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    });
+  
+    // 5. Принудительное обновление страницы (опционально)
+    window.location.href = '/login'; // или window.location.reload()
   };
 
   const checkAuth = useCallback(async () => {
@@ -207,6 +270,13 @@ const AuthProvider = ({ children }) => {
       return false;
     }
   }, []);
+
+  // В возвращаемом значении провайдера добавьте:
+  console.log('AuthProvider state update:', {
+    isAuth,
+    user,
+    isLoading
+  });
 
   return (
     <AuthContext.Provider value={{

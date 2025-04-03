@@ -1,3 +1,8 @@
+ul, li, a {
+    list-style: none;
+    text-decoration: none;
+}
+
 .wrapper {
     display: flex;
     position: relative;
