@@ -41,7 +41,6 @@ function EmailVerification() {
           || 'Ошибка верификации. Пожалуйста, попробуйте ещё раз.';
         
         setMessage(errorMessage);
-        
         if (error.response?.status === 400) {
           setMessage(prev => prev + '. Запросите новую ссылку для подтверждения.');
         }
