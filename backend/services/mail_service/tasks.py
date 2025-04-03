@@ -7,7 +7,8 @@ import os
 
 @app.task(name="mail_service.tasks.send_verification_email")
 def send_verification_email(firstName, lastName, email_address, verification_token):
-    verification_link = f"http://buildflow.api/auth/verify-email?token={verification_token}"
+    # verification_link = f"http://buildflow.api/auth/verify-email?token={verification_token}"
+    verification_link = f"http://26.190.118.118/verify-email?token={verification_token}"
 
     # Load and render HTML template
     env = Environment(loader=FileSystemLoader("templates"))

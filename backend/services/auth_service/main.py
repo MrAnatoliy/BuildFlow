@@ -25,10 +25,6 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://26.190.118.118",
-        "http://localhost:3000",
-        "http://localhost:8080",
-        "http://buildflow.api",
         "*",
         # other origins
     ],
