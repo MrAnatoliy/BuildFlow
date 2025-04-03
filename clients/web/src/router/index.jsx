@@ -1,8 +1,11 @@
 import { createBrowserRouter } from "react-router-dom";
 
-import AuthRoute from "./AuthRoute";
+import AuthRoute from "./publicAuthRoute";
 import PublicRoute from "./publicRoute";
 import ProtectedRoute from "./protectedRoute";
+
+import EmailVerification from "../components/hooks/service/EmailVerification";
+import RouteErrorBoundary from "../components/RouteErrorBoundary";
 
 import Login from "../pages/public/Login";
 import Register from "../pages/public/Register";
@@ -12,6 +15,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <AuthRoute />,
+    errorElement: <RouteErrorBoundary />,
     children: [
       {
         path: "/login",
@@ -20,6 +24,10 @@ const router = createBrowserRouter([
       {
         path: "/register",
         element: <Register />,
+      },
+      {
+        path: "/verify-email",
+        element: <EmailVerification />,
       },
     ],
   },
