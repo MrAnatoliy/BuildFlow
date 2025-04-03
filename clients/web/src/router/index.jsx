@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import AuthRoute from "./publicAuthRoute";
 import PublicRoute from "./publicRoute";
@@ -47,6 +47,10 @@ const router = createBrowserRouter([
         path: "/promo",
         element: <div>Collaboration Page</div>,
       },
+      {
+        path: "*",
+        element: <Navigate to="/" replace />,
+      },
     ],
   },
   {
@@ -55,7 +59,6 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/profile",
-        index: true,
         element: <Profile />,
       },
     ],
