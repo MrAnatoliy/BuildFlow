@@ -1,4 +1,25 @@
+import { useAuth } from "../../provider/authProvider";
+
 const Header = () => {
+
+    const { isAuth, logout, user } = useAuth();
+
+    const formatUserName = (fullName) => {
+        if (!fullName) return "Unknown";
+      
+        // Удаляем лишние пробелы и разделяем по пробелам/дефисам
+        const parts = fullName.trim().split(/[\s-]+/);
+        
+        // Если только одно слово - возвращаем как есть
+        if (parts.length === 1) return parts[0];
+        
+        // Берем первое слово (имя) и первую букву последнего слова (фамилии)
+        const firstName = parts[0];
+        const lastNameInitial = parts[parts.length - 1].charAt(0).toUpperCase();
+        
+        return `${firstName} ${lastNameInitial}.`;
+      };
+      
     return (
         <>
             <nav className="navbar absolute z-100 bg-base-100 shadow-sm" style={{padding: "15px 20px"}}>
@@ -13,8 +34,11 @@ const Header = () => {
                 </label>
 
                 <input type="text" placeholder="Search" className="input" disabled />
-            
+        
                 <div className="flex gap-2">
+                    <span>
+                        {!isAuth ? false : formatUserName(user.name)}
+                    </span>
                     <div className="dropdown dropdown-end">
                         <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
                             <div className="w-10 rounded-full">
@@ -23,17 +47,20 @@ const Header = () => {
                                 src="/user.svg" />
                             </div>
                         </div>
-                        <ul
-                            tabIndex={0}
-                            className="menu menu-sm dropdown-content bg-base-100 rounded-box mt-7 w-52 p-2 shadow">
-                            <li>
-                            <a className="justify-between">
-                                Profile
-                                <span className="badge">New</span>
-                            </a>
-                            </li>
+                        <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box mt-7 w-52 p-2 shadow">
+                            {!isAuth 
+                            ? false 
+                            :   <li>
+                                    <div className="justify-between">
+                                        <a href="/profile">Profile</a>
+                                        <span className="badge">New</span>
+                                    </div>
+                                </li>
+                            }
+
+
                             <li><a>Settings</a></li>
-                            <li><a>Logout</a></li>
+                            {!isAuth ? false : <li onClick={logout}><a>Logout</a></li>}
                         </ul>
                     </div>
                 </div>
