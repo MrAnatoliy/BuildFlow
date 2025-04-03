@@ -9,6 +9,7 @@ import "./assets/css/tailwindcss.css";
 import "./assets/css/app.css";
 
 function App() {
+  
   return (
     <AuthProvider>
       <Header />

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../provider/authProvider'
 
 const Login = () => {
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, isAuth } = useAuth(); // Добавляем isAuth из useAuth()
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
 
@@ -17,25 +17,25 @@ const Login = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    setError('');
+    
+    if (error) setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
-    const result = await login(formData, rememberMe);
-    
-    if (result.success) {
-      console.log('Login successful:', result.data);
-      navigate('/profile');
-    } else {
-      if (result.status === 401) {
-        setError(result.error || 'Неверные учетные данные');
+    try {
+      const result = await login(formData, rememberMe);
+      
+      if (result.success) {
+        console.log('Login successful, isAuth:', isAuth); // Теперь isAuth доступна
+        navigate('/profile');
       } else {
-        setError('Произошла ошибка при входе');
+        setError(result.error || 'Неверные учетные данные');
       }
-      console.error('Login error:', result.error);
+    } catch (err) {
+      setError('Произошла ошибка при входе');
+      console.error('Login error:', err);
     }
   };
 
@@ -116,4 +116,4 @@ const Login = () => {
   )
 }
 
-export default Login;
+export default Login
