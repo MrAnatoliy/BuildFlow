@@ -14,6 +14,7 @@ function EmailVerification() {
     const verifyEmail = async () => {
       setIsLoading(true);
       try {
+
         const searchParams = new URLSearchParams(window.location.search);
         const verify_token = searchParams.get('token');
         
@@ -41,6 +42,7 @@ function EmailVerification() {
           || 'Ошибка верификации. Пожалуйста, попробуйте ещё раз.';
         
         setMessage(errorMessage);
+        
         if (error.response?.status === 400) {
           setMessage(prev => prev + '. Запросите новую ссылку для подтверждения.');
         }
