@@ -21,6 +21,7 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'http://buildflow.api',
+        port: 3000,
         changeOrigin: true,
         secure: false,
         withCredentials: false,

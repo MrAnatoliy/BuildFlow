@@ -1,13 +1,14 @@
-import axios from 'axios';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../provider/authProvider'
 
 // Утилита для валидации email
 const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const Register = () => {
 
-  const API_BASE_URL = 'http://buildflow.api';
+  const { register, isLoading } = useAuth();  
+  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     username: '',
@@ -18,21 +19,10 @@ const Register = () => {
     confirmPassword: ''
   });
 
-  const [errors, setErrors] = useState('');
+  const [error, setError] = useState('');
   const [serverError, setServerError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const navigate = useNavigate();
-
-  /* Конфигурация axios для работы с credentials
-  const api = axios.create({
-    baseURL: '/api',
-    withCredentials: true,
-    headers: {
-      'Content-Type': 'application/json',
-    }
-  });
-  */
 
   // Валидация всех полей формы
   const validateForm = () => {
@@ -73,7 +63,7 @@ const Register = () => {
       isValid = false;
     }
 
-    setErrors(newErrors);
+    setError(newErrors);
     return isValid;
   };
 
@@ -81,69 +71,78 @@ const Register = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+    if (error[name]) {
+      setError(prev => ({ ...prev, [name]: '' }));
     }
   };
 
   const handleBlur = (e) => {
     const { name, value } = e.target;
     if (!value.trim() && name !== 'lastName') {
-      setErrors(prev => ({ ...prev, [name]: `${name} is required` }));
+      setError(prev => ({ ...prev, [name]: `${name} is required` }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setServerError('');
-
+  
     if (!validateForm()) return;
-
     setIsSubmitting(true);
-
+  
     try {
-
-      // Подготовка данных для отправки
       const { confirmPassword, ...registrationData } = formData;
-
-      const response = await axios.post(`${API_BASE_URL}/auth/register`, registrationData, { headers: { 'Content-Type': 'application/json' } });
-
-
-      if (response.status === 201) {
-        navigate('/login');
-      }
-    } catch (err) {
-      console.error('Registration error:', err);
+  
+      const result = await register(registrationData);
       
-      // Обработка различных типов ошибок
-      if (err.response) {
-        // Ошибка от сервера
-        if (err.response.status === 409) {
-          setServerError('User with this email or username already exists');
-        } else if (err.response.data?.errors) {
-          // Валидационные ошибки от сервера
-          const serverErrors = err.response.data.errors.reduce((acc, error) => {
-            const field = error.field || 'form';
-            acc[field] = error.message;
-            return acc;
-          }, {});
-          
-          setErrors(prev => ({ ...prev, ...serverErrors }));
-          setServerError('Please fix the errors in the form');
-        } else {
-          setServerError(err.response.data?.message || 'Registration failed. Please try again.');
-        }
-      } else if (err.request) {
-        // Ошибка сети или CORS
-        setServerError('Network error. Please check your connection and try again.');
+      if (result.success && result.status === 200) {
+        console.log('Успешная регистрация');
+        alert('Поздравляю! Вы успешно зарегистрировались, переход на страницу Входа.');
+        navigate('/login');
       } else {
-        // Другие ошибки
-        setServerError('An unexpected error occurred. Please try again.');
+        if (result.status === 409) {
+          setServerError('User with this email or username already exists');
+        } else if (result.error) {
+          // Handle server validation errors if they exist in the response
+          if (typeof result.error === 'string') {
+            setServerError(result.error);
+          } else if (Array.isArray(result.error)) {
+            const serverErrors = result.error.reduce((acc, err) => {
+              const field = err.field || 'form';
+              acc[field] = err.message;
+              return acc;
+            }, {});
+            
+            setError(prev => ({ ...prev, ...serverErrors }));
+            setServerError('Please fix the errors in the form');
+          }
+        } else {
+          setServerError('Registration failed. Please try again.');
+        }
       }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setServerError('An unexpected error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
@@ -189,12 +188,12 @@ const Register = () => {
                 type="text"
                 autoComplete="username"
                 required
-                className={`mt-1 block w-full px-3 py-2 border ${errors.username ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                className={`mt-1 block w-full px-3 py-2 border ${error.username ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
                 value={formData.username}
                 onChange={handleChange}
                 onBlur={handleBlur}
               />
-              {errors.username && <p className="mt-2 text-sm text-red-600">{errors.username}</p>}
+              {error.username && <p className="mt-2 text-sm text-red-600">{error.username}</p>}
             </div>
 
             <div>
@@ -207,12 +206,12 @@ const Register = () => {
                 type="email"
                 autoComplete="email"
                 required
-                className={`mt-1 block w-full px-3 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                className={`mt-1 block w-full px-3 py-2 border ${error.email ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
                 value={formData.email}
                 onChange={handleChange}
                 onBlur={handleBlur}
               />
-              {errors.email && <p className="mt-2 text-sm text-red-600">{errors.email}</p>}
+              {error.email && <p className="mt-2 text-sm text-red-600">{error.email}</p>}
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -226,12 +225,12 @@ const Register = () => {
                   type="text"
                   autoComplete="given-name"
                   required
-                  className={`mt-1 block w-full px-3 py-2 border ${errors.firstName ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                  className={`mt-1 block w-full px-3 py-2 border ${error.firstName ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
                   value={formData.firstName}
                   onChange={handleChange}
                   onBlur={handleBlur}
                 />
-                {errors.firstName && <p className="mt-2 text-sm text-red-600">{errors.firstName}</p>}
+                {error.firstName && <p className="mt-2 text-sm text-red-600">{error.firstName}</p>}
               </div>
 
               <div>
@@ -243,12 +242,12 @@ const Register = () => {
                   name="lastName"
                   type="text"
                   autoComplete="family-name"
-                  className={`mt-1 block w-full px-3 py-2 border ${errors.lastName ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                  className={`mt-1 block w-full px-3 py-2 border ${error.lastName ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
                   value={formData.lastName}
                   onChange={handleChange}
                   onBlur={handleBlur}
                 />
-                {errors.lastName && <p className="mt-2 text-sm text-red-600">{errors.lastName}</p>}
+                {error.lastName && <p className="mt-2 text-sm text-red-600">{error.lastName}</p>}
               </div>
             </div>
 
@@ -263,7 +262,7 @@ const Register = () => {
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="new-password"
                   required
-                  className={`block w-full px-3 py-2 border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                  className={`block w-full px-3 py-2 border ${error.password ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
                   value={formData.password}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -285,7 +284,7 @@ const Register = () => {
                   )}
                 </button>
               </div>
-              {errors.password && <p className="mt-2 text-sm text-red-600">{errors.password}</p>}
+              {error.password && <p className="mt-2 text-sm text-red-600">{error.password}</p>}
             </div>
 
             <div>
@@ -298,12 +297,12 @@ const Register = () => {
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="new-password"
                 required
-                className={`mt-1 block w-full px-3 py-2 border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
+                className={`mt-1 block w-full px-3 py-2 border ${error.confirmPassword ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm`}
                 value={formData.confirmPassword}
                 onChange={handleChange}
                 onBlur={handleBlur}
               />
-              {errors.confirmPassword && <p className="mt-2 text-sm text-red-600">{errors.confirmPassword}</p>}
+              {error.confirmPassword && <p className="mt-2 text-sm text-red-600">{error.confirmPassword}</p>}
             </div>
           </div>
 

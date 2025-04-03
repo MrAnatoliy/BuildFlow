@@ -1,25 +1,9 @@
 import { useAuth } from "../../provider/authProvider";
 
+import formatUserName from "../hooks/formatUserName";
+
 const Header = () => {
-
     const { isAuth, logout, user } = useAuth();
-
-    const formatUserName = (fullName) => {
-        if (!fullName) return "Unknown";
-      
-        // Удаляем лишние пробелы и разделяем по пробелам/дефисам
-        const parts = fullName.trim().split(/[\s-]+/);
-        
-        // Если только одно слово - возвращаем как есть
-        if (parts.length === 1) return parts[0];
-        
-        // Берем первое слово (имя) и первую букву последнего слова (фамилии)
-        const firstName = parts[0];
-        const lastNameInitial = parts[parts.length - 1].charAt(0).toUpperCase();
-        
-        return `${firstName} ${lastNameInitial}.`;
-      };
-      
     return (
         <>
             <nav className="navbar absolute z-100 bg-base-100 shadow-sm" style={{padding: "15px 20px"}}>

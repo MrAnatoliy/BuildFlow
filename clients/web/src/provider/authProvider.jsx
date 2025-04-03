@@ -161,7 +161,6 @@ const AuthProvider = ({ children }) => {
   
           if (isTokenValid) {
             setAuth(true);
-            // Если есть idToken - декодируем пользователя
             if (session.idToken) {
               const userData = jwtDecode.jwtDecode(session.idToken);
               setUser(userData);
@@ -226,6 +225,29 @@ const AuthProvider = ({ children }) => {
     }
   };
 
+  const register = async (credentials) => {
+    try {
+      setIsLoading(true);
+      const response = await axios.post('/auth/register', credentials);
+      
+      return { 
+        success: true,
+        data: response.data,
+        status: response.status
+      };
+    } catch (error) {
+      console.error('Register error:', error);
+      return { 
+        success: false,
+        error: error.response?.data?.message || error.message || 'Registration failed',
+        status: error.response?.status,
+        responseData: error.response?.data
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = () => {
     // 1. Очищаем все хранилища
     localStorage.removeItem('session');
@@ -233,24 +255,20 @@ const AuthProvider = ({ children }) => {
     sessionStorage.removeItem('session');
     sessionStorage.removeItem('user');
   
-    // 2. Дополнительная очистка на случай, если данные хранились под другими ключами
     const authKeys = ['token', 'auth', 'accessToken', 'refreshToken', 'idToken'];
     authKeys.forEach(key => {
       localStorage.removeItem(key);
       sessionStorage.removeItem(key);
     });
-  
-    // 3. Очищаем состояние приложения
+
     setAuth(false);
     setUser(null);
   
-    // 4. Очищаем cookies (если они использовались)
     document.cookie.split(';').forEach(cookie => {
       const [name] = cookie.split('=').map(s => s.trim());
       document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
     });
   
-    // 5. Принудительное обновление страницы (опционально)
     window.location.href = '/login'; // или window.location.reload()
   };
 
@@ -284,6 +302,7 @@ const AuthProvider = ({ children }) => {
       user,
       isLoading,
       login,
+      register,
       logout,
       checkAuth,
       getSession
