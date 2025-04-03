@@ -29,7 +29,6 @@ app.add_middleware(
         "http://localhost:3000",
         "http://localhost:8080",
         "http://buildflow.api",
-        '*'
         # other origins
     ],
     allow_credentials=True,
