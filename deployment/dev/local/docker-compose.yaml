@@ -9,17 +9,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ../../../backend/infrastructure/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-    labels:
-      #OAuth
-      - "traefik.http.middlewares.oauth-auth.forwardauth.address=http://oauth2-proxy:4180/oauth2/auth"
-      - "traefik.http.middlewares.oauth-auth.forwardauth.trustForwardHeader=true"
-
-      #CORS
-      - "traefik.http.middlewares.cors.headers.accessControlAllowOriginListRegex=^https?://[a-zA-Z0-9.-]+(:[0-9]+)?$"
-      - "traefik.http.middlewares.cors.headers.accessControlAllowMethods=GET,OPTIONS,PUT,POST,DELETE"
-      - "traefik.http.middlewares.cors.headers.accessControlAllowHeaders=Authorization,Content-Type"
-      - "traefik.http.middlewares.cors.headers.accessControlAllowCredentials=true"
-      - "traefik.http.middlewares.cors.headers.addVaryHeader=true"
+      - ../../../backend/infrastructure/traefik/dynamic_conf.yml:/etc/traefik/dynamic_conf.yml
     networks:
       - keycloak-network
   
@@ -27,16 +17,9 @@ services:
     image: quay.io/oauth2-proxy/oauth2-proxy:latest
     ports:
       - 4180:4180
-    environment:
-      - OAUTH2_PROXY_PROVIDER=keycloak-oidc
-      - OAUTH2_PROXY_CLIENT_ID=oauth2-proxy
-      - OAUTH2_PROXY_CLIENT_SECRET=jC5HR0M5E28gR7jzNyV8vAbGwriRQMnU
-      - OAUTH2_PROXY_COOKIE_SECRET=TTRTItPkAcgOpboHN6drOcV8ZOtGpbZKcjOFn2HHEm4=
-      - OAUTH2_PROXY_REDIRECT_URL=http://buildflow.api/oauth2/callback
-      - OAUTH2_PROXY_OIDC_ISSUER_URL=http://keycloak:8080/realms/buildflow-realm
-      - OAUTH2_PROXY_EMAIL_DOMAINS=*
-      - OAUTH2_PROXY_CODE_CHALLENGE_METHOD=S256
-      - OAUTH2_PROXY_HTTP_ADDRESS=0.0.0.0:4180
+    volumes:
+      - ../../../backend/infrastructure/oauth2-proxy/oauth2-proxy.cfg:/etc/oauth2-proxy.cfg
+    command: ['--config','/etc/oauth2-proxy.cfg']
     networks:
       - keycloak-network
 
@@ -90,7 +73,7 @@ services:
       - traefik.enable=true
       - traefik.http.routers.whoami.rule=Host(`buildflow.api`) && PathPrefix(`/whoami`)
       - traefik.http.routers.whoami.entrypoints=web
-      - traefik.http.routers.whoami.middlewares=oauth-auth,cors
+      - traefik.http.routers.whoami.middlewares=auth-chain@file,cors@file
       - traefik.http.routers.whoami.service=whoami-service
       - traefik.http.services.whoami-service.loadbalancer.server.port=80
     networks:
@@ -108,7 +91,7 @@ services:
       - traefik.enable=true
       - traefik.http.routers.auth_service.rule=Host(`buildflow.api`) && PathPrefix(`/auth`)
       - traefik.http.routers.auth_service.entrypoints=web
-      - traefik.http.routers.auth_service.middlewares=cors
+      - traefik.http.routers.auth_service.middlewares=cors@file
       - traefik.http.routers.auth_service.service=auth-service
       - traefik.http.services.auth-service.loadbalancer.server.port=8000
 
@@ -116,6 +99,15 @@ services:
     build:
       context: ../../../backend/services/mail_service
     container_name: mail_service
+    networks:
+      - keycloak-network
+
+  # FOR DEBUG ONLY
+  debug-proxy:
+    image: traefik/whoami
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.debug.rule=Host(`debug.localhost`)
     networks:
       - keycloak-network
 
