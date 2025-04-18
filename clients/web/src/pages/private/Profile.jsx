@@ -1,7 +1,7 @@
-import { useAuth } from '../../provider/authProvider';
+import { useAuth } from '../../provider/AuthProvider';
 
 const Profile = () => {
-    
+
     const IGNORED_ROLES = ["offline_access", "uma_authorization", "default-roles-buildflow-realm"];
 
     const { user } = useAuth();

@@ -39,4 +39,8 @@ export default defineConfig({
     terserOptions: { compress: true }
   },
 
+  optimizeDeps: {
+    include: ['pdfjs-dist/build/pdf.mjs', 'pdfjs-dist/build/pdf.worker.mjs'],
+  },
+
 })

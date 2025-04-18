@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DaisyUI Theme Colors Preview</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            padding: 2rem;
+            transition: background-color 0.3s;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            margin-bottom: 1.5rem;
+            color: var(--color-base-content);
+        }
+        
+        .theme-switcher {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .theme-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            border: 1px solid var(--color-base-content);
+            background: var(--color-base-100);
+            color: var(--color-base-content);
+            transition: all 0.3s;
+        }
+        
+        .theme-btn.active {
+            background: var(--color-primary);
+            color: var(--color-primary-content);
+            border-color: var(--color-primary);
+        }
+        
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .color-card {
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .color-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .color-preview {
+            height: 100px;
+            display: flex;
+            align-items: flex-end;
+            padding: 1rem;
+            font-weight: bold;
+        }
+        
+        .color-info {
+            padding: 1rem;
+            background: var(--color-base-100);
+        }
+        
+        .color-name {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--color-base-content);
+        }
+        
+        .color-values {
+            font-size: 0.9rem;
+            color: var(--color-base-content);
+            opacity: 0.8;
+        }
+        
+        /* Light theme */
+        :root, [data-theme="light"] {
+            --color-base-100: #ffffff;
+            --color-base-200: #f9f9ff;
+            --color-base-300: #e9e9f8;
+            --color-base-content: #636363;
+            --color-primary: #3b82f6;
+            --color-primary-content: #ffffff;
+            --color-secondary: #86efac;
+            --color-secondary-content: #166534;
+            --color-accent: #f97316;
+            --color-accent-content: #ffffff;
+            --color-neutral: #404040;
+            --color-neutral-content: #f9f9f9;
+            --color-info: #60a5fa;
+            --color-info-content: #f0f9ff;
+            --color-success: #4ade80;
+            --color-success-content: #ffffff;
+            --color-warning: #facc15;
+            --color-warning-content: #fef9c3;
+            --color-error: #ef4444;
+            --color-error-content: #fef2f2;
+            
+            background-color: var(--color-base-200);
+        }
+        
+        /* Dark theme */
+        [data-theme="dark"] {
+            --color-base-100: #666666;
+            --color-base-200: #515151;
+            --color-base-300: #5e5e5e;
+            --color-base-content: #ffffff;
+            --color-primary: #3b82f6;
+            --color-primary-content: #ffffff;
+            --color-secondary: #86efac;
+            --color-secondary-content: #166534;
+            --color-accent: #f97316;
+            --color-accent-content: #ffffff;
+            --color-neutral: #404040;
+            --color-neutral-content: #f9f9f9;
+            --color-info: #60a5fa;
+            --color-info-content: #f0f9ff;
+            --color-success: #4ade80;
+            --color-success-content: #ffffff;
+            --color-warning: #facc15;
+            --color-warning-content: #ffffff;
+            --color-error: #f87171;
+            --color-error-content: #fef2f2;
+            
+            background-color: var(--color-base-200);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>DaisyUI Theme Colors</h1>
+        
+        <div class="theme-switcher">
+            <button class="theme-btn active" data-theme="light">Light Theme</button>
+            <button class="theme-btn" data-theme="dark">Dark Theme</button>
+        </div>
+        
+        <div class="color-grid">
+            <!-- Base Colors -->
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-base-100); color: var(--color-base-content);">Base 100</div>
+                <div class="color-info">
+                    <div class="color-name">Base 100</div>
+                    <div class="color-values">--color-base-100<br>#ffffff / #666666</div>
+                </div>
+            </div>
+            
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-base-200); color: var(--color-base-content);">Base 200</div>
+                <div class="color-info">
+                    <div class="color-name">Base 200</div>
+                    <div class="color-values">--color-base-200<br>#f9f9ff / #515151</div>
+                </div>
+            </div>
+            
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-base-300); color: var(--color-base-content);">Base 300</div>
+                <div class="color-info">
+                    <div class="color-name">Base 300</div>
+                    <div class="color-values">--color-base-300<br>#e9e9f8 / #5e5e5e</div>
+                </div>
+            </div>
+            
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-base-content); color: var(--color-base-100);">Base Content</div>
+                <div class="color-info">
+                    <div class="color-name">Base Content</div>
+                    <div class="color-values">--color-base-content<br>#636363 / #ffffff</div>
+                </div>
+            </div>
+            
+            <!-- Primary Colors -->
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-primary); color: var(--color-primary-content);">Primary</div>
+                <div class="color-info">
+                    <div class="color-name">Primary</div>
+                    <div class="color-values">--color-primary<br>#3b82f6</div>
+                </div>
+            </div>
+            
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-primary-content); color: var(--color-primary); border: 1px solid var(--color-primary);">Primary Content</div>
+                <div class="color-info">
+                    <div class="color-name">Primary Content</div>
+                    <div class="color-values">--color-primary-content<br>#ffffff</div>
+                </div>
+            </div>
+            
+            <!-- Secondary Colors -->
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-secondary); color: var(--color-secondary-content);">Secondary</div>
+                <div class="color-info">
+                    <div class="color-name">Secondary</div>
+                    <div class="color-values">--color-secondary<br>#86efac</div>
+                </div>
+            </div>
+            
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-secondary-content); color: var(--color-secondary);">Secondary Content</div>
+                <div class="color-info">
+                    <div class="color-name">Secondary Content</div>
+                    <div class="color-values">--color-secondary-content<br>#166534</div>
+                </div>
+            </div>
+            
+            <!-- Accent Colors -->
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-accent); color: var(--color-accent-content);">Accent</div>
+                <div class="color-info">
+                    <div class="color-name">Accent</div>
+                    <div class="color-values">--color-accent<br>#f97316</div>
+                </div>
+            </div>
+            
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-accent-content); color: var(--color-accent); border: 1px solid var(--color-accent);">Accent Content</div>
+                <div class="color-info">
+                    <div class="color-name">Accent Content</div>
+                    <div class="color-values">--color-accent-content<br>#ffffff</div>
+                </div>
+            </div>
+            
+            <!-- Neutral Colors -->
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-neutral); color: var(--color-neutral-content);">Neutral</div>
+                <div class="color-info">
+                    <div class="color-name">Neutral</div>
+                    <div class="color-values">--color-neutral<br>#404040</div>
+                </div>
+            </div>
+            
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-neutral-content); color: var(--color-neutral);">Neutral Content</div>
+                <div class="color-info">
+                    <div class="color-name">Neutral Content</div>
+                    <div class="color-values">--color-neutral-content<br>#f9f9f9</div>
+                </div>
+            </div>
+            
+            <!-- Info Colors -->
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-info); color: var(--color-info-content);">Info</div>
+                <div class="color-info">
+                    <div class="color-name">Info</div>
+                    <div class="color-values">--color-info<br>#60a5fa</div>
+                </div>
+            </div>
+            
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-info-content); color: var(--color-info); border: 1px solid var(--color-info);">Info Content</div>
+                <div class="color-info">
+                    <div class="color-name">Info Content</div>
+                    <div class="color-values">--color-info-content<br>#f0f9ff</div>
+                </div>
+            </div>
+            
+            <!-- Success Colors -->
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-success); color: var(--color-success-content);">Success</div>
+                <div class="color-info">
+                    <div class="color-name">Success</div>
+                    <div class="color-values">--color-success<br>#4ade80</div>
+                </div>
+            </div>
+            
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-success-content); color: var(--color-success); border: 1px solid var(--color-success);">Success Content</div>
+                <div class="color-info">
+                    <div class="color-name">Success Content</div>
+                    <div class="color-values">--color-success-content<br>#ffffff</div>
+                </div>
+            </div>
+            
+            <!-- Warning Colors -->
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-warning); color: var(--color-warning-content);">Warning</div>
+                <div class="color-info">
+                    <div class="color-name">Warning</div>
+                    <div class="color-values">--color-warning<br>#facc15</div>
+                </div>
+            </div>
+            
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-warning-content); color: var(--color-warning); border: 1px solid var(--color-warning);">Warning Content</div>
+                <div class="color-info">
+                    <div class="color-name">Warning Content</div>
+                    <div class="color-values">--color-warning-content<br>#fef9c3 / #ffffff</div>
+                </div>
+            </div>
+            
+            <!-- Error Colors -->
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-error); color: var(--color-error-content);">Error</div>
+                <div class="color-info">
+                    <div class="color-name">Error</div>
+                    <div class="color-values">--color-error<br>#ef4444 / #f87171</div>
+                </div>
+            </div>
+            
+            <div class="color-card">
+                <div class="color-preview" style="background-color: var(--color-error-content); color: var(--color-error); border: 1px solid var(--color-error);">Error Content</div>
+                <div class="color-info">
+                    <div class="color-name">Error Content</div>
+                    <div class="color-values">--color-error-content<br>#fef2f2</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.documentElement.setAttribute('data-theme', btn.dataset.theme);
+                document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
