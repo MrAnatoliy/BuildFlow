@@ -1,18 +1,21 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuth } from "../provider/authProvider";
+import { useAuth } from "../provider/AuthProvider";
+
+import Header from '../components/layout/Header/Header';
 
 const AuthRoute = () => {
-  const { isAuth, isLoading } = useAuth();
-
-  if (isLoading) {
-    return <div>Проверка авторизации...</div>;
-  }
+  const { isAuth } = useAuth();
 
   if (isAuth) {
     return <Navigate to="/profile" replace />;
   }
 
-  return <Outlet />;
+  return (
+    <>
+      <Header />
+      <Outlet />
+    </>
+  )
 };
 
 export default AuthRoute;

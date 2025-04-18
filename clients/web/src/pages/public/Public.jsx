@@ -1,9 +1,6 @@
-import Header from "../../components/limbs/header";
-
 const Public = () => {
     return (
         <>
-            <Header />
             <div className="wrapper">
                 <div className="min-h-screen bg-base-200 flex items-center justify-center">
                     <div className="card bg-base-100 shadow-xl p-6">

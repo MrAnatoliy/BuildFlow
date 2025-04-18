@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import mem from "mem";
+import memoize from "memoize";
 import axios from 'axios';
 import * as jwtDecode from 'jwt-decode';
 
@@ -14,7 +14,6 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Получение данных пользователя из id токена
   const getUserFromToken = (idToken) => {
     if (!idToken) return null;
     try {
@@ -40,7 +39,7 @@ const AuthProvider = ({ children }) => {
   
     const session = {
       accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken || '', // может быть необязательным
+      refreshToken: tokens.refreshToken || '',
       idToken: tokens.idToken || tokens.accessToken // fallback
     };
   
@@ -55,7 +54,7 @@ const AuthProvider = ({ children }) => {
       console.log('Session saved successfully');
     } catch (error) {
       console.error('Failed to decode user data:', error);
-      setAuth(true); // все равно считаем авторизованным, если есть accessToken
+      setAuth(true);
     }
   };
 
@@ -77,10 +76,9 @@ const AuthProvider = ({ children }) => {
   
     try {
       const response = await axios.post('/auth/refresh', {
-        refresh_token: session.refreshToken // Учитываем формат сервера
+        refresh_token: session.refreshToken
       });
   
-      // Обрабатываем ответ в том же формате, что и при логине
       const { access_token, refresh_token, id_token } = response.data;
       
       if (!access_token) {
@@ -89,7 +87,7 @@ const AuthProvider = ({ children }) => {
   
       const tokens = {
         accessToken: access_token,
-        refreshToken: refresh_token || session.refreshToken, // Используем старый, если новый не пришел
+        refreshToken: refresh_token || session.refreshToken,
         idToken: id_token || session.idToken
       };
   
@@ -102,8 +100,8 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  const memoizedRefreshToken = mem(handleRefreshToken, {
-    maxAge: 10000 // 10 секунд
+  const memoizedRefreshToken = memoize(handleRefreshToken, {
+    maxAge: 10000
   });
 
 
@@ -152,7 +150,6 @@ const AuthProvider = ({ children }) => {
   
       if (session?.accessToken) {
         try {
-          // Декодируем accessToken для проверки срока действия
           const decoded = jwtDecode.jwtDecode(session.accessToken);
           console.log('Decoded token info:', decoded);
   
@@ -185,7 +182,6 @@ const AuthProvider = ({ children }) => {
     try {
       setIsLoading(true);
       const response = await axios.post('/auth/login', credentials);
-      console.log('Login response:', response.data);
   
       const tokens = {
         accessToken: response.data.access_token,
@@ -197,13 +193,11 @@ const AuthProvider = ({ children }) => {
         throw new Error('Access token is missing in response');
       }
   
-      // Сохраняем сессию и ждем завершения
       await new Promise(resolve => {
         saveSession(tokens, rememberMe);
         resolve();
       });
-  
-      // Явно обновляем состояние перед возвратом
+
       setAuth(true);
       const userData = getUserFromToken(tokens.idToken);
       setUser(userData);
@@ -214,7 +208,7 @@ const AuthProvider = ({ children }) => {
         status: response.status
       };
     } catch (error) {
-      console.error('Login error:', error);
+        console.error('Login error:', error);
       return { 
         success: false,
         error: error.response?.data?.message || error.message || 'Login failed',
@@ -249,7 +243,6 @@ const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    // 1. Очищаем все хранилища
     localStorage.removeItem('session');
     localStorage.removeItem('user');
     sessionStorage.removeItem('session');
@@ -269,7 +262,7 @@ const AuthProvider = ({ children }) => {
       document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
     });
   
-    window.location.href = '/login'; // или window.location.reload()
+    window.location.href = '/login';
   };
 
   const checkAuth = useCallback(async () => {
@@ -289,7 +282,6 @@ const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // В возвращаемом значении провайдера добавьте:
   console.log('AuthProvider state update:', {
     isAuth,
     user,

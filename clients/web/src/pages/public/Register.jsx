@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../provider/authProvider'
+import { useAuth } from '../../provider/AuthProvider'
 
-// Утилита для валидации email
 const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 const Register = () => {
@@ -24,7 +23,6 @@ const Register = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Валидация всех полей формы
   const validateForm = () => {
     const newErrors = {};
     let isValid = true;
@@ -103,7 +101,7 @@ const Register = () => {
         if (result.status === 409) {
           setServerError('User with this email or username already exists');
         } else if (result.error) {
-          // Handle server validation errors if they exist in the response
+
           if (typeof result.error === 'string') {
             setServerError(result.error);
           } else if (Array.isArray(result.error)) {
@@ -129,20 +127,6 @@ const Register = () => {
   }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">

@@ -1,15 +1,15 @@
 import React from "react";
 import { RouterProvider } from "react-router-dom";
-import AuthProvider from "./provider/authProvider";
+import AuthProvider from "./provider/AuthProvider";
 import router from "./router";
 
-import Header from "./components/limbs/header";
+import ErrorDisplay from "./components/ui/DisplayError/DisplayError";
 
-import "./assets/css/tailwindcss.css";
-import "./assets/css/app.css";
+import './assets/css/tailwindcss.css';
+import './assets/css/app.css';
+
 
 function App() {
-
   /*
   const { serverOnline, isOnline } = useServerConnection();
 
@@ -24,10 +24,10 @@ function App() {
  
   return (
     <AuthProvider>
-      <Header />
-      <RouterProvider router={router} />
+        <RouterProvider router={router} />
+        <ErrorDisplay />
     </AuthProvider>
-  );
+  )
 }
 
 export default App;

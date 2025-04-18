@@ -4,12 +4,15 @@ import AuthRoute from "./publicAuthRoute";
 import PublicRoute from "./publicRoute";
 import ProtectedRoute from "./protectedRoute";
 
-import EmailVerification from "../components/hooks/service/EmailVerification";
-import RouteErrorBoundary from "../components/RouteErrorBoundary";
+import EmailVerification from "../services/EmailVerification";
+import RouteErrorBoundary from "../components/error/RouteErrorBoundary";
 
+import Home from "../pages/public/Home";
 import Login from "../pages/public/Login";
 import Register from "../pages/public/Register";
 import Profile from "../pages/private/Profile";
+import TestPage from "../pages/private/testPage";
+import Blueprint from "../pages/private/Blueprint";
 
 const router = createBrowserRouter([
   {
@@ -36,8 +39,12 @@ const router = createBrowserRouter([
     element: <PublicRoute />,
     children: [
       {
+        path: "*",
+        element: <Navigate to="/" replace />,
+      },
+      {
         index: true,
-        element: <div>Home Page</div>,
+        element: <Home />,
       },
       {
         path: "/privacy",
@@ -48,8 +55,12 @@ const router = createBrowserRouter([
         element: <div>Collaboration Page</div>,
       },
       {
-        path: "*",
-        element: <Navigate to="/" replace />,
+        path: "/test",
+        element: <TestPage />,
+      },
+      {
+        path: "/blueprint",
+        element: <Blueprint />,
       },
     ],
   },

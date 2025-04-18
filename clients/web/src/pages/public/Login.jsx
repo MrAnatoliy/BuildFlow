@@ -1,119 +1,145 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../provider/authProvider'
+import { useAuth } from '../../provider/AuthProvider'
+
+import { motion } from "framer-motion";
+
+import { useError } from '../../provider/ErrorProvider';
+import { getLoginErrorMessage } from '../../components/error/ErrorHander/ErrorHandler';
 
 const Login = () => {
-  const { login, isLoading, isAuth } = useAuth(); // Добавляем isAuth из useAuth()
-  const [rememberMe, setRememberMe] = useState(false);
-  const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({
-    username: '',
-    password: ''
-  });
+    const { login, isLoading } = useAuth()
+    const { setErrorAutoClose } = useError()
+    const [rememberMe, setRememberMe] = useState(false)
+    const navigate = useNavigate()
 
-  const [error, setError] = useState('');
+    const [formData, setFormData] = useState({
+        username: '',
+        password: ''
+    })
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    
-    if (error) setError('');
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    try {
-      const result = await login(formData, rememberMe);
-      
-      if (result.success) {
-        console.log('Login successful, isAuth:', isAuth); // Теперь isAuth доступна
-        navigate('/profile');
-      } else {
-        setError(result.error || 'Неверные учетные данные');
-      }
-    } catch (err) {
-      setError('Произошла ошибка при входе');
-      console.error('Login error:', err);
+    const handleChange = (e) => {
+        const { name, value } = e.target
+        setFormData(prev => ({ ...prev, [name]: value }))
     }
-  };
+    
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+    
+        try {
+            const result = await login(formData, rememberMe)
+            
+            if (result.success) {
+                setErrorAutoClose('Вход выполнен успешно!', 'success', 2000)
+                setTimeout(() => navigate('/profile'), 2000)
+            } else {
+                const errorMessage = getLoginErrorMessage(result.error)
+                setErrorAutoClose(errorMessage, 'error', 5000)
+            }
+        } catch (err) {
+            const errorMessage = getLoginErrorMessage(err)
+            setErrorAutoClose(errorMessage, 'error', 5000)
+            console.error('Login error:', err)
+        }
+    }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-md">
-        <h2 className="text-3xl font-extrabold text-center text-gray-900">Вход</h2>
-        
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            {error}
-          </div>
-        )}
+    return (
+        <>
+            <div className="wrapper flex column-center">
+                <div className="flex w-full min-h-full flex-col justify-center px-6 py-12 lg:px-8">
+                   
+                    <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+                        <img className="mx-auto h-10 w-auto" src="./buildFlow.png" alt="buildFlow" />
+                        <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-gray-900">
+                            Sign in
+                        </h2>
+                    </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm space-y-4">
-            <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Логин
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                value={formData.username}
-                onChange={handleChange}
-                autoComplete="username"
-                disabled={isLoading}
-              />
+                    <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+                       
+                        <form noValidate onSubmit={handleSubmit} method="POST" className="space-y-4">
+                            <div>
+                                <label htmlFor="email" className="block text-sm/6 font-medium text-gray-900">
+                                    Login
+                                </label>
+                                <div className="mt-2">
+                                    <input
+                                        id="username"
+                                        name="username"
+                                        placeholder="Username"
+                                        type="text"
+                                        autoComplete="username"
+                                        className="w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" 
+                                        value={formData.username}
+                                        onChange={handleChange}
+                                        disabled={isLoading}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <div className="flex items-center justify-between">
+                                    <label htmlFor="password" className="block text-sm/6 font-medium text-gray-900">
+                                        Password
+                                    </label>
+                                    <div className="text-sm">
+                                        <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-500">Forgot password?</a>
+                                    </div>
+                                </div>
+                                <div className="mt-2">
+                                    <input 
+                                        id="password" 
+                                        name="password" 
+                                        placeholder="Password"
+                                        type="password"
+                                        autoComplete="current-password"   
+                                        className="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6" 
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        disabled={isLoading}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex items-center">
+                                <input
+                                    id="remember-me"
+                                    name="remember-me"
+                                    type="checkbox"
+                                    title="Required"
+                                    checked={rememberMe}
+                                    onChange={(e) => setRememberMe(e.target.checked)}
+                                    className="checkbox validator h-4 w-4 text-base-100 focus:ring-blue-500 rounded"
+                                />
+                                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                                    Required
+                                </label>
+                            </div>
+                            <motion.button  
+                                initial={{ scale: 0 }}  
+                                animate={{ scale: 1 }} 
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                type="submit"  
+                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50" 
+                                disabled={isLoading}
+                            >
+                                {isLoading ? 'Выполняется вход...' : 'Войти'}
+                            </motion.button>
+                        </form>
+
+
+
+                        <p className="mt-10 text-center text-sm/6 text-gray-500">
+                            Not a member?<br />
+                            <a href="/register" className="font-semibold text-indigo-600 hover:text-indigo-500">Start a 14 day free trial</a>
+                        </p>
+
+                    </div>
+                </div>
             </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Пароль
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                value={formData.password}
-                onChange={handleChange}
-                autoComplete="current-password"
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                Запомнить меня
-              </label>
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Выполняется вход...' : 'Войти'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  )
+        </>
+    )
 }
-
 export default Login

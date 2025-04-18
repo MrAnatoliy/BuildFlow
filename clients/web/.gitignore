@@ -13,8 +13,8 @@ node_modules
 dist
 dist-ssr
 *.local
-pcv_backups
-last_src
+DVP_backups
+srcOld
 
 # Editor directories and files
 .vscode/*
