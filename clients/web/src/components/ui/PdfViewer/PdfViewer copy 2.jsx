@@ -14,7 +14,6 @@ const PDFViewer = ({ pdfUrl }) => {
   const [page, setPage] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [zoomScale, setZoomScale] = useState(2);
 
   const {
     containerRef,
@@ -52,7 +51,7 @@ const PDFViewer = ({ pdfUrl }) => {
     const renderPage = async () => {
       try {
         const viewport = page.getViewport({ 
-          scale: zoomScale,
+          scale: 1,
           rotation: page.rotate // Учитываем ориентацию страницы
         });
         
@@ -80,24 +79,14 @@ const PDFViewer = ({ pdfUrl }) => {
     };
 
     renderPage();
-  }, [page, zoomScale]);
+  }, [page]);
 
   const handleZoom = (factor) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-
-    // Получаем текущий scale из состояния panAndZoom
-    const currentScale = scale;
-    let newScale = currentScale * factor;
-
-    // Проверяем, не выходит ли новый масштаб за границы
-    // (хотя это уже делается в reducer, но здесь мы можем избежать лишнего dispatch)
-    if (newScale < 0.1 || newScale > 3.0) return;
-
     zoomTo(centerX, centerY, factor);
-    setZoomScale(newScale)
   };
 
   if (isLoading) return <div>Загрузка PDF...</div>;

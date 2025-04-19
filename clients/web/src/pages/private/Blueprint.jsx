@@ -2,7 +2,6 @@ import React, { useState, useRef } from "react";
 
 import { RiColorFilterLine, RiFilter2Line } from "react-icons/ri";
 
-import ZoomContainer from "../../components/layout/Zoom/ZoomContainer";
 import PDFViewer from "../../components/ui/PdfViewer/PdfViewer";
 
 const PointDetails = ({ point, onClose }) => {
