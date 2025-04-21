@@ -5,13 +5,13 @@ services:
     image: traefik:v3.3
     ports:
       - "80:80"
-      - "9000:8080"
+      - "11000:8080" # UI port
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ../../../backend/infrastructure/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - ../../../backend/infrastructure/traefik/dynamic_conf.yml:/etc/traefik/dynamic_conf.yml
     networks:
-      - keycloak-network
+      - bridge-network
   
   oauth2-proxy:
     image: quay.io/oauth2-proxy/oauth2-proxy:latest
@@ -21,7 +21,7 @@ services:
       - ../../../backend/infrastructure/oauth2-proxy/oauth2-proxy.cfg:/etc/oauth2-proxy.cfg
     command: ['--config','/etc/oauth2-proxy.cfg']
     networks:
-      - keycloak-network
+      - bridge-network
 
   keycloak:
     image: quay.io/keycloak/keycloak:26.1.4
@@ -34,7 +34,7 @@ services:
     volumes:
       - ../../../backend/infrastructure/keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json
     networks:
-      - keycloak-network
+      - bridge-network
 
   rabbitmq:
     image: rabbitmq:4.0-management
@@ -45,7 +45,7 @@ services:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
     networks:
-      - keycloak-network
+      - bridge-network
 
   flower:
     image: mher/flower
@@ -55,7 +55,7 @@ services:
       - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq//
     command: celery --broker=amqp://guest:guest@rabbitmq// flower
     networks:
-      - keycloak-network
+      - bridge-network
 
   # LOCAL MAIL SERVER
   mailhog:
@@ -65,7 +65,7 @@ services:
       - "1025:1025"   # SMTP port
       - "8025:8025"   # Web UI port
     networks:
-      - keycloak-network
+      - bridge-network
 
   whoami:
     image: traefik/whoami
@@ -77,7 +77,7 @@ services:
       - traefik.http.routers.whoami.service=whoami-service
       - traefik.http.services.whoami-service.loadbalancer.server.port=80
     networks:
-      - keycloak-network
+      - bridge-network
 
   auth_service:
     build:
@@ -86,7 +86,7 @@ services:
     ports:
       - 8000:8000
     networks:
-      - keycloak-network
+      - bridge-network
     labels:
       - traefik.enable=true
       - traefik.http.routers.auth_service.rule=Host(`buildflow.api`) && PathPrefix(`/auth`)
@@ -100,17 +100,70 @@ services:
       context: ../../../backend/services/mail_service
     container_name: mail_service
     networks:
-      - keycloak-network
+      - bridge-network
 
-  # FOR DEBUG ONLY
-  debug-proxy:
-    image: traefik/whoami
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.debug.rule=Host(`debug.localhost`)
+  
+  # ----------------- User service bundle -------------------
+  # Ports = default + 3
+
+  user_service:
+    build: 
+      context: ../../../backend/services/user_service
+    container_name: user_service
     networks:
-      - keycloak-network
+      - bridge-network
+
+  user_service_db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: user_db
+    ports:
+     - 5435:5432
+    networks:
+      - bridge-network
+      
+  # ---------------------------------------------------------
+
+
+
+  # ---------- Databases managment and monitoring -----------
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    networks:
+      - bridge-network
+    depends_on:
+      - user_service_db
+
+  # ---------------------------------------------------------
+
+
+
+  minio:
+    image: minio/minio
+    container_name: minio
+    ports:
+      - 9000:9000 # API
+      - 9001:9001 # Web ui
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: changeme
+    volumes:
+      - minio-data:/data
+    command: server /data --console-address ":9001"
 
 networks:
-  keycloak-network:
+  bridge-network:
     driver: bridge
+
+volumes:
+  minio-data:
