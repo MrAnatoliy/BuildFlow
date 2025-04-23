@@ -4,4 +4,6 @@ authlib
 httpx
 itsdangerous
 pydantic
+pydantic-settings
 celery
+aio_pika
