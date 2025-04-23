@@ -8,6 +8,8 @@ This service is responsible for representation of user from keycloak in this app
 ## Service structure
 - **alembic** - Database migrations
 - **api** - Routes and andpoints
+- **core** - Core logic of service (logging, monitoring and so on)
+- **crud** - CRUD operations for service
 - **db** - Interaction with database driver
 - **messages** - Interaction with RabbitMQ Message broker within a corresponding service queue (one service - one queue)
 - **models** - Representations of domain objects used in this service via SQLAlchemy models
