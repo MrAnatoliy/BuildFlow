@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 
 from messages.consumer import start_consumer
+from core.logger import setup_logger
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -14,3 +15,5 @@ async def lifespan(app: FastAPI):
         await consumer_task
 
 app = FastAPI(lifespan=lifespan)
+
+setup_logger(app)
