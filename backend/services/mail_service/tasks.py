@@ -5,6 +5,7 @@ from jinja2 import Environment, FileSystemLoader
 from celery_app import app
 import os
 
+
 @app.task(name="mail_service.tasks.send_verification_email")
 def send_verification_email(firstName, lastName, email_address, verification_token):
     # verification_link = f"http://buildflow.api/auth/verify-email?token={verification_token}"
@@ -14,9 +15,7 @@ def send_verification_email(firstName, lastName, email_address, verification_tok
     env = Environment(loader=FileSystemLoader("templates"))
     template = env.get_template("verification_email.html")
     html_content = template.render(
-        first_name=firstName,
-        last_name=lastName,
-        verification_link=verification_link
+        first_name=firstName, last_name=lastName, verification_link=verification_link
     )
 
     msg = MIMEMultipart("alternative")

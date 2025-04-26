@@ -16,6 +16,7 @@ token_store = {}
 
 logger = logging.getLogger(settings.service_name)
 
+
 @router.post("/login")
 async def login(login_request: LoginRequest):
     """
@@ -23,7 +24,7 @@ async def login(login_request: LoginRequest):
     Uses the password grant type of the OIDC API.
     """
     logger.debug("Login attempt for user: %s", login_request.username)
-    
+
     token_url = f"{settings.keycloak_base_url}/realms/{settings.realm}/protocol/openid-connect/token"
     data = {
         "grant_type": "password",
@@ -33,29 +34,39 @@ async def login(login_request: LoginRequest):
         "password": login_request.password,
         "scope": "openid email profile",
     }
-    
+
     async with httpx.AsyncClient() as client:
         logger.debug("Sending POST request to Keycloak token endpoint: %s", token_url)
         response = await client.post(token_url, data=data)
-        logger.debug("Keycloak token response status: %s, body: %s", response.status_code, response.text)
-    
+        logger.debug(
+            "Keycloak token response status: %s, body: %s",
+            response.status_code,
+            response.text,
+        )
+
     if response.status_code != 200:
-        logger.error("Login failed for user %s: %s", login_request.username, response.text)
-        raise HTTPException(status_code=response.status_code, detail="Invalid credentials or error during token retrieval")
-    
+        logger.error(
+            "Login failed for user %s: %s", login_request.username, response.text
+        )
+        raise HTTPException(
+            status_code=response.status_code,
+            detail="Invalid credentials or error during token retrieval",
+        )
+
     logger.info("Login successful for user: %s", login_request.username)
     token_data = response.json()
     tokens = {
         "access_token": token_data.get("access_token"),
         "refresh_token": token_data.get("refresh_token"),
-        "id_token": token_data.get("id_token")
+        "id_token": token_data.get("id_token"),
     }
-    
+
     # Create a FastAPI JSONResponse so we can modify cookies
     resp = JSONResponse(content=token_data)
     set_tokens_cookies(resp, tokens)
     logger.info("Login successful for user: %s", login_request.username)
     return resp
+
 
 @router.post("/register")
 async def register(reg_req: RegistrationRequest):
@@ -66,7 +77,9 @@ async def register(reg_req: RegistrationRequest):
     logger.debug("Registration attempt for user: %s", reg_req.username)
     admin_token = await get_admin_token()
 
-    create_user_url = f"{settings.keycloak_base_url}/admin/realms/{settings.realm}/users"
+    create_user_url = (
+        f"{settings.keycloak_base_url}/admin/realms/{settings.realm}/users"
+    )
     # Prepare user data payload according to Keycloak's API schema.
     user_data = {
         "username": reg_req.username,
@@ -75,56 +88,62 @@ async def register(reg_req: RegistrationRequest):
         "lastName": reg_req.lastName,
         "emailVerified": False,
         "enabled": True,
-        "credentials": [{
-            "type": "password",
-            "value": reg_req.password,
-            "temporary": False
-        }]
+        "credentials": [
+            {"type": "password", "value": reg_req.password, "temporary": False}
+        ],
     }
     logger.debug("User registration payload: %s", user_data)
-    
+
     async with httpx.AsyncClient() as client:
         headers = {
             "Authorization": f"Bearer {admin_token}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
-        logger.debug("Sending POST request to Keycloak admin endpoint: %s", create_user_url)
+        logger.debug(
+            "Sending POST request to Keycloak admin endpoint: %s", create_user_url
+        )
         response = await client.post(create_user_url, json=user_data, headers=headers)
-        logger.debug("Keycloak registration response status: %s, body: %s", response.status_code, response.text)
-    
+        logger.debug(
+            "Keycloak registration response status: %s, body: %s",
+            response.status_code,
+            response.text,
+        )
+
     if response.status_code == 201:
         # Extract user ID from the Location header
         location_header = response.headers.get("Location")
-        keycloak_uuid = location_header.rstrip("/").split("/")[-1] if location_header else None
+        keycloak_uuid = (
+            location_header.rstrip("/").split("/")[-1] if location_header else None
+        )
     elif response.status_code == 409:
         # User already exists; you may want to fetch the UUID by username here if needed
         raise HTTPException(status_code=409, detail="User already exist")
     else:
-        logger.error("User registration failed for user %s: %s", reg_req.username, response.text)
-        raise HTTPException(status_code=response.status_code, detail="User registration failed")
-    
+        logger.error(
+            "User registration failed for user %s: %s", reg_req.username, response.text
+        )
+        raise HTTPException(
+            status_code=response.status_code, detail="User registration failed"
+        )
+
     logger.info("User registered successfully: %s", reg_req.username)
 
-    logger.info(f'Creating new user with user_service')
-    await publish_event(
-        'user.created', 
-        {
-            "keycloak_uuid": keycloak_uuid
-        }              
-    )
+    logger.info(f"Creating new user with user_service")
+    await publish_event("user.created", {"keycloak_uuid": keycloak_uuid})
 
     verification_token = str(uuid4())
     token_store[verification_token] = reg_req.username
     logger.info(
-        f'Sending task for send verification eamil for user {reg_req.username} {reg_req.firstName} {reg_req.lastName}\ntoken : {verification_token}'
+        f"Sending task for send verification eamil for user {reg_req.username} {reg_req.firstName} {reg_req.lastName}\ntoken : {verification_token}"
     )
 
     celery.send_task(
         "mail_service.tasks.send_verification_email",
-        args=[reg_req.firstName, reg_req.lastName, reg_req.email, verification_token]
+        args=[reg_req.firstName, reg_req.lastName, reg_req.email, verification_token],
     )
 
     return {"detail": "User registered successfully"}
+
 
 @router.get("/verify-email")
 async def verify_email(token: str = Query(...)):
@@ -143,12 +162,14 @@ async def verify_email(token: str = Query(...)):
     admin_token = await get_admin_token()
 
     # First, find the user ID in Keycloak
-    user_search_url = f"{settings.keycloak_base_url}/admin/realms/{settings.realm}/users"
+    user_search_url = (
+        f"{settings.keycloak_base_url}/admin/realms/{settings.realm}/users"
+    )
     async with httpx.AsyncClient() as client:
         response = await client.get(
             user_search_url,
             headers={"Authorization": f"Bearer {admin_token}"},
-            params={"username": username}
+            params={"username": username},
         )
 
         if response.status_code != 200 or not response.json():
@@ -161,8 +182,11 @@ async def verify_email(token: str = Query(...)):
         user_url = f"{settings.keycloak_base_url}/admin/realms/{settings.realm}/users/{user_id}"
         response = await client.put(
             user_url,
-            headers={"Authorization": f"Bearer {admin_token}", "Content-Type": "application/json"},
-            json={"emailVerified": True}
+            headers={
+                "Authorization": f"Bearer {admin_token}",
+                "Content-Type": "application/json",
+            },
+            json={"emailVerified": True},
         )
 
         if response.status_code != 204:
@@ -172,13 +196,16 @@ async def verify_email(token: str = Query(...)):
     logger.info(f"Email successfully verified for user: {username}")
     return {"detail": f"Email verified for user: {username}"}
 
+
 @router.get("/userinfo")
 async def userinfo(authorization: str = Header(...)):
     """
     Retrieves user information from Keycloak using the OIDC userinfo endpoint.
     The access token must be passed in the Authorization header as 'Bearer <token>'.
     """
-    logger.debug("Userinfo request received with Authorization header: %s", authorization)
+    logger.debug(
+        "Userinfo request received with Authorization header: %s", authorization
+    )
     # Remove "Bearer " prefix if present
     if authorization.lower().startswith("bearer "):
         token = authorization[7:]
@@ -187,22 +214,35 @@ async def userinfo(authorization: str = Header(...)):
 
     userinfo_url = f"{settings.keycloak_base_url}/realms/{settings.realm}/protocol/openid-connect/userinfo"
     async with httpx.AsyncClient() as client:
-        logger.debug("Sending GET request to Keycloak userinfo endpoint: %s", userinfo_url)
-        response = await client.get(userinfo_url, headers={"Authorization": f"Bearer {token}"})
-        logger.debug("Keycloak userinfo response status: %s, body: %s", response.status_code, response.text)
+        logger.debug(
+            "Sending GET request to Keycloak userinfo endpoint: %s", userinfo_url
+        )
+        response = await client.get(
+            userinfo_url, headers={"Authorization": f"Bearer {token}"}
+        )
+        logger.debug(
+            "Keycloak userinfo response status: %s, body: %s",
+            response.status_code,
+            response.text,
+        )
 
     if response.status_code != 200:
         logger.error("Failed to retrieve userinfo: %s", response.text)
-        raise HTTPException(status_code=response.status_code, detail="Failed to retrieve userinfo")
-    
+        raise HTTPException(
+            status_code=response.status_code, detail="Failed to retrieve userinfo"
+        )
+
     return response.json()
+
 
 @router.post("/refresh")
 async def refresh_token(refresh_req: RefreshTokenRequest):
     """
     Refreshes an access token using the provided refresh token.
     """
-    logger.debug("Refresh token request received with token: %s", refresh_req.refresh_token)
+    logger.debug(
+        "Refresh token request received with token: %s", refresh_req.refresh_token
+    )
     token_url = f"{settings.keycloak_base_url}/realms/{settings.realm}/protocol/openid-connect/token"
     data = {
         "grant_type": "refresh_token",
@@ -211,21 +251,29 @@ async def refresh_token(refresh_req: RefreshTokenRequest):
         "refresh_token": refresh_req.refresh_token,
         "scope": "openid email profile",
     }
-    
+
     async with httpx.AsyncClient() as client:
-        logger.debug("Sending POST request to Keycloak token endpoint for refresh: %s", token_url)
+        logger.debug(
+            "Sending POST request to Keycloak token endpoint for refresh: %s", token_url
+        )
         response = await client.post(token_url, data=data)
-        logger.debug("Keycloak refresh token response status: %s, body: %s", response.status_code, response.text)
-    
+        logger.debug(
+            "Keycloak refresh token response status: %s, body: %s",
+            response.status_code,
+            response.text,
+        )
+
     if response.status_code != 200:
         logger.error("Refresh token request failed: %s", response.text)
-        raise HTTPException(status_code=response.status_code, detail="Failed to refresh token")
-    
+        raise HTTPException(
+            status_code=response.status_code, detail="Failed to refresh token"
+        )
+
     token_data = response.json()
     tokens = {
         "access_token": token_data.get("access_token"),
         "refresh_token": token_data.get("refresh_token"),
-        "id_token": token_data.get("id_token")
+        "id_token": token_data.get("id_token"),
     }
 
     # Create a FastAPI JSONResponse so we can set cookies

@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 
+
 class Settings(BaseSettings):
     service_name: str = "auth_service"
 
@@ -13,5 +14,6 @@ class Settings(BaseSettings):
     admin_client_secret: str = "y9uhXHRRsiJvcy4KWkYUX8M3tlNyqEK1"
 
     message_broker_url: str = "amqp://guest:guest@rabbitmq/"
+
 
 settings = Settings()
