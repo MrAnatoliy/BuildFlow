@@ -16,6 +16,8 @@ token_store = {}
 
 logger = logging.getLogger(settings.service_name)
 
+# testing black lint step
+
 
 @router.post("/login")
 async def login(login_request: LoginRequest):
