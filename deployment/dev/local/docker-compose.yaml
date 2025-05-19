@@ -110,8 +110,17 @@ services:
     build: 
       context: ../../../backend/services/user_service
     container_name: user_service
+    ports:
+      - 8003:8000
     networks:
       - bridge-network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.user_service.rule=Host(`buildflow.api`) && PathPrefix(`/user`)
+      - traefik.http.routers.user_service.entrypoints=web
+      - traefik.http.routers.user_service.middlewares=cors@file,auth-chain@file
+      - traefik.http.routers.user_service.service=user_service
+      - traefik.http.services.user_service.loadbalancer.server.port=8000
 
   user_service_db:
     image: postgres
@@ -122,6 +131,40 @@ services:
       POSTGRES_DB: user_db
     ports:
      - 5435:5432
+    networks:
+      - bridge-network
+      
+  # ---------------------------------------------------------
+
+
+    # ----------------- Project service bundle -------------------
+  # Ports = default + 4
+
+  project_service:
+    build: 
+      context: ../../../backend/services/project_service
+    container_name: project_service
+    ports:
+      - 8004:8000
+    networks:
+      - bridge-network
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.project_service.rule=Host(`buildflow.api`) && (PathPrefix(`/project`) || PathPrefix(`/stage`) || PathPrefix(`/task`) || PathPrefix(`/requirement`) || PathPrefix(`/volume`))
+      - traefik.http.routers.project_service.entrypoints=web
+      - traefik.http.routers.project_service.middlewares=cors@file,auth-chain@file
+      - traefik.http.routers.project_service.service=project_service
+      - traefik.http.services.project_service.loadbalancer.server.port=8000
+
+  project_service_db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: project_db
+    ports:
+     - 5436:5432
     networks:
       - bridge-network
       

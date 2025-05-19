@@ -2,12 +2,10 @@ import asyncio
 import contextlib
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
-
 from messages.consumer import start_consumer
 from core.logger import setup_logger
-
-from api.routes import user
+from api.routes import auth
+from contextlib import asynccontextmanager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -16,7 +14,6 @@ async def lifespan(app: FastAPI):
     consumer_task.cancel()
     with contextlib.suppress(asyncio.CancelledError):
         await consumer_task
-
 
 app = FastAPI(lifespan=lifespan)
 
@@ -30,4 +27,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(user.router)
+app.include_router(auth.router, prefix="/auth", tags=["auth"])

@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     service_name: str = "auth_service"
 
     keycloak_base_url: str = "http://keycloak:8080"
+    exchange_name: str = "rpc"
     realm: str = "buildflow-realm"
 
     client_id: str = "backend_client"
