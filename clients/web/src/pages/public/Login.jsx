@@ -29,10 +29,10 @@ const Login = () => {
     
         try {
             const result = await login(formData, rememberMe)
-            
+
             if (result.success) {
                 setErrorAutoClose('Вход выполнен успешно!', 'success', 2000)
-                setTimeout(() => navigate('/profile'), 2000)
+                setTimeout(() => navigate('/projects'), 2000)
             } else {
                 const errorMessage = getLoginErrorMessage(result.error)
                 setErrorAutoClose(errorMessage, 'error', 5000)
@@ -46,7 +46,7 @@ const Login = () => {
 
     return (
         <>
-            <div className="wrapper flex column-center">
+            <div className="wrapper flex column-center text-base-100">
                 <div className="flex w-full min-h-full flex-col justify-center px-6 py-12 lg:px-8">
                    
                     <div className="sm:mx-auto sm:w-full sm:max-w-sm">
@@ -60,7 +60,7 @@ const Login = () => {
                        
                         <form noValidate onSubmit={handleSubmit} method="POST" className="space-y-4">
                             <div>
-                                <label htmlFor="email" className="block text-sm/6 font-medium text-gray-900">
+                                <label htmlFor="username" className="block text-sm/6 font-medium text-gray-900">
                                     Login
                                 </label>
                                 <div className="mt-2">
@@ -113,7 +113,7 @@ const Login = () => {
                                     className="checkbox validator h-4 w-4 text-base-100 focus:ring-blue-500 rounded"
                                 />
                                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                                    Required
+                                    Запомнить меня
                                 </label>
                             </div>
                             <motion.button  
@@ -133,7 +133,7 @@ const Login = () => {
 
                         <p className="mt-10 text-center text-sm/6 text-gray-500">
                             Not a member?<br />
-                            <a href="/register" className="font-semibold text-indigo-600 hover:text-indigo-500">Start a 14 day free trial</a>
+                            <a href="/register" className="font-semibold text-indigo-600 hover:text-indigo-500">Register NOW!!!</a>
                         </p>
 
                     </div>

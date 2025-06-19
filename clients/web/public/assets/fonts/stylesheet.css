@@ -1,8 +1,8 @@
 @font-face {
-    font-family: 'Inter';
-    src: url('subset-Inter-Regular.woff2') format('woff2'),
-        url('subset-Inter-Regular.woff') format('woff');
-    font-weight: normal;
+    font-family: 'Manrope';
+    src: url('subset-Manrope-ExtraLight.woff2') format('woff2'),
+        url('subset-Manrope-ExtraLight.woff') format('woff');
+    font-weight: 200;
     font-style: normal;
     font-display: swap;
 }

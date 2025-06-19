@@ -1,41 +1,117 @@
-import { Link } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+
+import {
+  containerVariants,
+  slideFromTop,
+  hoverScale,
+  tapScale,
+} from "../../../utils/animations";
+
+import {
+  IconBluePrint,
+  IconContractors,
+  IconDashboard,
+  IconNotification,
+  IconUser,
+} from "../../icons/icons";
 import { useAuth } from "../../../provider/AuthProvider";
 
-import formatUserName from "../../../utils/FormatUserName";
-
-import { IconBluePrint, IconContractors, IconDashboard, IconNotification, IconUser } from "../../icons/icons";
-
 const Sidebar = () => {
-    const { isAuth, logout, user } = useAuth();
-    return (
-        <>
-            <header className="w-20 h-full flex flex-col justify-between items-center bg-base-100 text-base-content shadow-right z-100 pt-8 pb-5">
-                <ul className="w-full h-full flex flex-col justify-start items-center">
-                    <li>
-                        <IconNotification />
-                    </li>
-                    <div className="divider mt-5 mb-5 pl-5 pr-5"></div>
-                    <li>
-                        <IconDashboard />
-                    </li>
-                    <li className="mt-6 mb-6">
-                        <IconBluePrint />
-                    </li>
-                </ul>
-                <ul className="w-full h-full flex flex-col justify-end items-center">
-                    <li>
-                        <Link to="/blueprint">
-                            <IconContractors />
-                        </Link>                     
-                    </li>
-                    <li className="w-11 h-11 flex justify-center items-center rounded-full bg-base bg-accent transition-colors duration-300 ease-in hover:bg-base-100 hover:[&>div>svg>path]:fill-blue-500 mt-5">
-                        <IconUser />
-                    </li>
-                </ul>
-            </header>
-        </>
-    )
-}
+  const { isManager, isExecutor } = useAuth()
 
-export default Sidebar
+  const location = useLocation();
+  const navigate = useNavigate();
 
+  const isProjectsList = location.pathname === "/projects";
+  const isProjectDashboard = location.pathname.startsWith("/project/");
+  const currentProjectId = location.pathname.split("/")[2]; // /project/:id
+
+  const goTo = (path) => () => navigate(path);
+
+  return (
+    <motion.header
+      initial="hidden"
+      animate="show"
+      variants={containerVariants}
+      className="fixed w-full sm:w-18 sm:h-full shadow-xl bg-base-content text-base-100 pl-[18px] pr-[18px] p-[10px] sm:p-[30px] z-100"
+    >
+      <ul className="w-full h-full flex flex-row sm:flex-col justify-center items-center">
+        <ul className="w-full h-full flex flex-row sm:flex-col justify-start items-center">
+            
+          <motion.li
+            variants={slideFromTop}
+            whileHover={hoverScale}
+            whileTap={tapScale}
+            className="hidden sm:block icon-list-item mr-[30px] sm:mr-0 sm:mb-[60px]"
+          >
+            <IconNotification />
+          </motion.li>
+
+          <motion.li
+            variants={slideFromTop}
+            whileHover={hoverScale}
+            whileTap={tapScale}
+            onClick={goTo(isProjectDashboard ? `/project/${currentProjectId}` : "/projects")}
+            className={`icon-list-item mr-[15px] sm:mr-0 sm:mb-[30px] ${
+              isProjectsList || location.pathname === `/project/${currentProjectId}` ? "active" : ""
+            }`}
+          >
+            <IconDashboard />
+          </motion.li>
+
+          {(isProjectDashboard && isManager) && (
+            <motion.li
+              variants={slideFromTop}
+              whileHover={hoverScale}
+              whileTap={tapScale}
+              onClick={goTo(`/project/${currentProjectId}/blueprint`)}
+              className={`icon-list-item mr-[15px] sm:mr-0 sm:mb-[30px] ${
+                location.pathname.includes("blueprint") ? "active" : ""
+              }`}
+            >
+              <IconBluePrint />
+            </motion.li>
+          )}
+        </ul>
+
+        <ul className="block sm:hidden flex justify-center items-center">
+          <motion.span variants={slideFromTop} whileHover={hoverScale} whileTap={tapScale}>
+            BuildFlow
+          </motion.span>
+        </ul>
+
+        <ul className="w-full h-full flex flex-row sm:flex-col justify-end items-center">
+          {(isProjectDashboard && !isManager && !isExecutor) && (
+            <motion.li
+              variants={slideFromTop}
+              whileHover={hoverScale}
+              whileTap={tapScale}
+              onClick={goTo(`/project/${currentProjectId}/contractors`)}
+              className={`icon-list-item mr-[15px] sm:mr-0 sm:mb-[30px] ${
+                location.pathname.includes("contractors") ? "active" : ""
+              }`}
+            >
+              <IconContractors />
+            </motion.li>
+          )}
+
+          {/* 👤 Profile — всегда */}
+          <motion.li
+            variants={slideFromTop}
+            whileHover={hoverScale}
+            whileTap={tapScale}
+            onClick={goTo("/profile")}
+            className={`w-11 h-11 flex justify-center items-center rounded-full bg-base transition-colors duration-300 ease-in hover:bg-primary ${
+              location.pathname === "/profile" ? "bg-primary" : "bg-accent"
+            }`}
+          >
+            <IconUser />
+          </motion.li>
+        </ul>
+      </ul>
+    </motion.header>
+  );
+};
+
+export default Sidebar;

@@ -1,32 +1,27 @@
-import React from "react";
+import { useEffect } from 'react';
 import { RouterProvider } from "react-router-dom";
 import AuthProvider from "./provider/AuthProvider";
 import router from "./router";
 
 import ErrorDisplay from "./components/ui/DisplayError/DisplayError";
+import Modal from 'react-modal';
 
 import './assets/css/tailwindcss.css';
 import './assets/css/app.css';
 
+const App = () => {
 
-function App() {
-  /*
-  const { serverOnline, isOnline } = useServerConnection();
+	useEffect(() => {
+		Modal.setAppElement('#root'); // Указать ID корневого элемента
+	}, []);
 
-  if (!isOnline) {
-    return <OfflinePage message="Нет интернет-соединения. Пытаемся восстановить..." />;
-  }
-
-  if (!serverOnline) {
-    return <OfflinePage message="Сервер недоступен. Автоматическое обновление..." />;
-  }
-  */
- 
-  return (
-    <AuthProvider>
-        <RouterProvider router={router} />
-        <ErrorDisplay />
-    </AuthProvider>
+ 	return (
+		<>
+			<AuthProvider>
+				<RouterProvider router={router} />
+				<ErrorDisplay />
+			</AuthProvider>	
+		</>
   )
 }
 
