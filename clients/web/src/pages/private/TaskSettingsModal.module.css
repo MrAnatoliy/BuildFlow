@@ -1,0 +1,56 @@
+.modal {
+  background: #fff;
+  padding: 2rem;
+  max-width: 500px;
+  margin: auto;
+  border-radius: 10px;
+  position: relative;
+}
+
+.overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  inset: 0;
+}
+
+.modeToggle {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 1rem;
+}
+
+.modeToggle button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: #eee;
+  cursor: pointer;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.modeToggle .active {
+  background-color: #007bff;
+  color: white;
+}
+
+.section {
+  margin-top: 1rem;
+}
+
+.confirmInput {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.deleteButton {
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+}

@@ -12,6 +12,7 @@ const AuthProvider = ({ children }) => {
 
   const [isAuth, setAuth] = useState(false);
   const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const getUserFromToken = (idToken) => {
@@ -23,6 +24,16 @@ const AuthProvider = ({ children }) => {
       return null;
     }
   };
+
+  const fetchUserRole = async () => {
+    try {
+      const res = await axios.get('/role/me');
+      setRole(res.data.name);
+    } catch (error) {
+      console.error('Ошибка при получении роли:', error);
+    }
+  };
+
 
   const getSession = () => {
     const session = localStorage.getItem('session') || sessionStorage.getItem('session');
@@ -147,7 +158,6 @@ const AuthProvider = ({ children }) => {
     const initializeAuth = async () => {
       const session = getSession();
       console.log('Initial session from storage:', session);
-  
       if (session?.accessToken) {
         try {
           const decoded = jwtDecode.jwtDecode(session.accessToken);
@@ -163,6 +173,7 @@ const AuthProvider = ({ children }) => {
               setUser(userData);
               console.log('User data from idToken:', userData);
             }
+            await fetchUserRole();
           } else {
             console.log('Token expired, attempting refresh...');
             await handleRefreshToken();
@@ -284,6 +295,7 @@ const AuthProvider = ({ children }) => {
 
   console.log('AuthProvider state update:', {
     isAuth,
+    role,
     user,
     isLoading
   });
@@ -292,6 +304,9 @@ const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{
       isAuth,
       user,
+      role,
+      isManager: role === 'project_manager',
+      isExecutor: role === 'executor',
       isLoading,
       login,
       register,

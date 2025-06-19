@@ -1,107 +1,108 @@
+* {
+    font-family: 'Inter';
+    letter-spacing: 1px;
+}
+
 @font-face {
     font-family: 'Inter';
     font-display: swap;
-    src: url('assets/fonts/woff2/subset-Inter-Regular.woff2') format('woff2'),
-            url('assets/fonts/woff/subset-Inter-Regular.woff') format('woff');
+    src: url('assets/fonts/woff2/Manrope.woff2') format('woff2'),
+            url('assets/fonts/woff/Manrope.woff') format('woff');
 }
 
-.f-light-e { font-weight: 200; }
-.f-light   { font-weight: 300; }
-.f-regular { font-weight: 400; }
-.f-medium  { font-weight: 500; }
-.f-bold-s  { font-weight: 600; }
-.f-bold    { font-weight: 700; }
 
-* {
-    font-family: 'Inter';
-    letter-spacing: 0.45px;
+
+
+.gantt-chart {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-ul, li, a {
+.gantt .bar {
+  fill: #4f46e5;
+  rx: 3px;
+  ry: 3px;
+}
+
+.gantt .bar-progress {
+  fill: #818cf8;
+}
+
+.gantt .bar-label {
+  fill: white;
+  font-size: 12px;
+  font-weight: 500;
+  dominant-baseline: middle;
+}
+
+
+
+
+.font-w-light-e { font-weight: 200; }
+.font-w-light   { font-weight: 300; }
+.font-w-regular { font-weight: 400; }
+.font-w-medium  { font-weight: 500; }
+.font-w-bold-s  { font-weight: 600; }
+.font-w-bold    { font-weight: 700; }
+
+.nct {
+  -webkit-user-select: none;  /* Для WebKit-браузеров */ 
+  -moz-user-select: none;  /* Для Firefox */ 
+  -ms-user-select: none; /* Для Internet Explorer/Edge */ 
+  user-select: none; /* Стандартное свойство */
+  cursor: default !important;
+}
+
+.img, .icon {
+  width: 100%;
+  height: 100%;
+  -webkit-user-select: none;  /* Для WebKit-браузеров */ 
+  -moz-user-select: none;  /* Для Firefox */ 
+  -ms-user-select: none; /* Для Internet Explorer/Edge */ 
+  user-select: none; /* Стандартное свойство */
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.inherit-all {
+  font-size: inherit;
+  font-weight: inherit;
+  font-family: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  text-transform: inherit;
+  font-style: inherit;
+  text-decoration: inherit;
+}
+
+li, a {
     list-style: none;
     text-decoration: none;
+    cursor: pointer;
+}
+
+canvas {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.noise-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 100000;
+    opacity: 0.06;
 }
 
 .wrapper {
     position: relative;
-    overflow: hidden;
     width: 100vw;
     height: 100vh;
 }
-
-/*
-.overflow-h { overflow: hidden;}
-
-.flex {
-    display: flex;
-}
-
-.row-left {
-    flex-direction: row;
-    justify-content: center;
-    align-items: flex-start;
-}
-
-.row-right {
-    flex-direction: row;
-    justify-content: center;
-    align-items: flex-end;
-}
-
-.row-center {
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-}
-
-.row-spc-a {
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-}
-
-.row-spc-btw {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.column-right {
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-end;
-}
-
-.column-left {
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-}
-
-.column-center {
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.column-spc-btw {
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.column-center-ev {
-    flex-direction: column;
-    justify-content: space-evenly;
-    align-items: center;
-}
-*/
-
-/*
-===============
-  Support btn 
-===================
-*/
 
 #error-display {
     position: fixed;
@@ -109,145 +110,3 @@ ul, li, a {
     bottom: 0;
     transform: translate(-30px, -30px);
 }
-
-.primaryBlock, .secondBlock {
-    box-shadow: 0px 3px 7px 2px rgba(0, 0, 0, 0.19);
-}
-
-.primaryBlock {
-    border-radius: 18px;
-}
-
-.secondBlock {
-    border-radius: 12px;
-}
-
-small { font-size: 10px;}
-span {font-size: 13px;}
-p  { font-size: 16px; }
-h1 { font-size: 48px; }
-h2 { font-size: 40px; }
-h3 { font-size: 33px; }
-h4 { font-size: 28px; }
-h5 { font-size: 23px; }
-h6 { font-size: 20px; }
-
-button {
-    border-radius: 18px;
-}
-
-.filterButton, .swapButton-s, .swapButton-m {
-    box-shadow: 0px 0px 4px 0px rgba(0, 0, 0, 0.25);
-}
-
-.filterButton {
-    border-radius: 10px;
-}
-
-.filterButton span {
-    font-size: 13px;
-}
-
-
-.shadow-right {
-    box-shadow: 4px 0px 8px 0px oklch(0 0 0 / 14.51%);
-}
-
-.shadow-bottom {
-    box-shadow:  0px 3px 7px 2px oklch(0 0 0 / 9.8%);
-}
-
-.shadow-outer {
-    box-shadow: 0px 0px 4px 0px oklch(0 0 0 / 14.51%);
-}
-
-#chartdiv {
-    width: 100%;
-    height: 300px;
-}
-
-/* 
-
-.container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    grid-column-gap: 20px;
-    grid-row-gap: 20px;
-  
-  grid-template-areas:
-    "A B"
-    "A C";
-}
-  
-.item-a { 
-    grid-area: A; background-color: red;
-}
-.item-b { 
-    grid-area: B; background-color: blue; width: 77rem; height: 38rem;
-}
-.item-c { 
-    grid-area: C; background-color: green;
-}
-
-*/
-
-.react-transform-wrapper {
-    position: relative;
-    width: 100%;
-    height: 100%;
-}
-
-.react-transform-component {
-    width: 100%;
-    height: 100%;
-}
-
-.point {
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    background: rgb(53, 107, 255);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    cursor: pointer;
-  }
-  
-.point:focus {
-    width: 15px;
-    height: 15px;
-    background: red;
-}
-
-.point-details {
-    position: absolute;
-    right: 20px;
-    top: 20px;
-    width: 300px;
-    background: white;
-    padding: 20px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-
-
-.pdf-viewer {
-    margin: 20px auto;
-    max-width: 100%;
-    text-align: center;
-  }
-  
-  .pdf-canvas {
-    border: 1px solid #ccc;
-    margin-top: 10px;
-    max-width: 100%;
-  }
-  
-  .controls {
-    margin-bottom: 10px;
-  }
-  
-  .controls button {
-    margin: 0 5px;
-    padding: 5px 10px;
-  }

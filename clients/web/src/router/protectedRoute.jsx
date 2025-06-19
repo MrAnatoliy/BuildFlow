@@ -1,29 +1,16 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from "../provider/AuthProvider";
-
-import Sidebar from '../components/layout/Sidebar/Sidebar';
-
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from '../provider/AuthProvider';
+import Sidebar from "../components/layout/Sidebar/Sidebar";
 const ProtectedRoute = () => {
-  const { isAuth, isLoading, user } = useAuth();
-  const location = useLocation();
-
-  console.log('ProtectedRoute check:', { isAuth, isLoading });
-
-  if (isLoading) {
-    return <div>Проверка авторизации...</div>;
-  }
-
-  if (!isAuth) {
-    console.log('Redirecting to login, current auth state:', { isAuth, user });
-    return <Navigate to="/login" state={{ from: location }} replace />;
-  }
-
-  return (
-    <>
+  const { isAuth } = useAuth();
+  return isAuth 
+  ? <>
       <Sidebar />
-      <Outlet />
-    </>
-  )
+      <div className='wrapper'>
+        <Outlet />
+      </div>
+    </> 
+  : <Navigate to="/login" replace />;
 };
 
 export default ProtectedRoute

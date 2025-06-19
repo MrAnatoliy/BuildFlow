@@ -1,32 +1,31 @@
+import React from 'react';
 import { useAuth } from '../../provider/AuthProvider';
 
 const Profile = () => {
+  const { user, isLoading, isAuth, logout } = useAuth();
 
-    const IGNORED_ROLES = ["offline_access", "uma_authorization", "default-roles-buildflow-realm"];
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
-    const { user } = useAuth();
+  if (!isAuth) {
+    return <div>Please log in to see your profile.</div>;
+  }
 
-    if (!user) {
-        return <p>Данные не загружены</p>;
-    }
+  if (!user) {
+    return <div>User data is not available.</div>;
+  }
 
-    const filteredRoles = user.roles?.filter(role => !IGNORED_ROLES.includes(role)) || [];
-
-    return (
-        <div>
-            <h1>Профиль</h1>
-            <div>
-                <p>ID: {user.id}</p>
-                <p>Email: {user.email}</p>
-                <p>Имя: {user.name}</p>
-                {filteredRoles.length > 0 ? (
-                    <p>Роли: {filteredRoles.join(", ")}</p>
-                ) : (
-                    <p>Нет доступных ролей</p>
-                )}
-            </div>
+  return (
+    <>
+        <div className='p-[160px]'>
+            <div>My profile</div>
+            <div>Name: {user.name || user.username || user.email}</div>
+            <div>Email: {user.email}</div>
+            <button onClick={logout}>Выйти</button>
         </div>
-    );
+    </>
+  );
 };
 
 export default Profile;

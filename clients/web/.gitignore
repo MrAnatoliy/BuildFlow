@@ -9,12 +9,12 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+DVP_backups
+public/api
 node_modules
 dist
 dist-ssr
 *.local
-DVP_backups
-srcOld
 
 # Editor directories and files
 .vscode/*
@@ -30,4 +30,4 @@ srcOld
 # SSL-файлы
 *.pem
 *.key
-ssl/
+ssl

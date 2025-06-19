@@ -16,15 +16,15 @@ const ZoomContainer = ({ children }) => {
 
     return (
       <TransformWrapper
-        initialScale={0.85}
-        minScale={0.85}btn-sm 
-        maxScale={3}
-        wheel={{ step: 1 }}
+        initialScale={1}
+        minScale={1}
+        maxScale={25}
+        wheel={{ step: 5 }}
         doubleClick={{ disabled: false }}
       >
         <Controls />
         <TransformComponent>
-            <div className="w-full h-full z-20 ">
+            <div className="w-full h-full flex justify-center items-cennter z-20 ">
                 {children}
             </div>
         </TransformComponent>

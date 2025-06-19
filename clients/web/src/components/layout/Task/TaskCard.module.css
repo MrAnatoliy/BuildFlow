@@ -1,0 +1,115 @@
+.card {
+  background: #fff;
+  color: #191919;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 16px;
+}
+
+.date {
+  color: #ff6f61;
+}
+
+.priority {
+  background: #ffeded;
+  color: #ff4b4b;
+  padding: 2px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.description {
+  margin-top: 8px;
+  color: #888;
+}
+
+.expanded {
+  margin-top: 16px;
+}
+
+.requirements {
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.requirements label {
+  display: block;
+  margin-left: 10px;
+}
+
+.progressSection {
+  font-size: 14px;
+}
+
+.progressBarWrapper {
+  margin-top: 8px;
+}
+
+.progressBar {
+  background: #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  height: 10px;
+}
+
+.progress {
+  background: #00aaff;
+  height: 10px;
+}
+
+.progressText {
+  text-align: right;
+  font-size: 12px;
+  color: #555;
+  margin-top: 4px;
+}
+
+.footer {
+  display: flex;
+  background: #fff;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.executor {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  background: #f36;
+  color: white;
+  font-weight: bold;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  text-align: center;
+  line-height: 32px;
+  margin-right: 10px;
+}
+
+.name {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.role {
+  font-size: 12px;
+  color: #888;
+}
+
+.toggle {
+  cursor: pointer;
+  font-size: 20px;
+  user-select: none;
+}

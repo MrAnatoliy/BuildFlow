@@ -1,46 +1,36 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
-import tailwindcss from '@tailwindcss/vite'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react-swc';
+import tailwindcss from '@tailwindcss/vite';
+import autoprefixer from 'autoprefixer';
 
 export default defineConfig({
   
-  plugins: [
-    tailwindcss(),
-    react()
-  ],
+	server: {
+		host: '26.190.118.118',
+		port: 80,
+		/*
+			https: {
+				key: fs.readFileSync(path.resolve(__dirname, 'ssl/buildflow.org-key.pem')),
+				cert: fs.readFileSync(path.resolve(__dirname, 'ssl/buildflow.org.pem'))
+			},
+		*/
+	},
 
-  server: {
-    host: '26.190.118.118',
-    port: 80,
-    /*
-    https: {
-      key: fs.readFileSync(path.resolve(__dirname, 'ssl/buildflow.org-key.pem')),
-      cert: fs.readFileSync(path.resolve(__dirname, 'ssl/buildflow.org.pem'))
-    },
-    */
-    proxy: {
-      '/api': {
-        target: 'http://buildflow.api',
-        port: 3000,
-        changeOrigin: true,
-        secure: false,
-        withCredentials: false,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-      }
-    }
-  },
+	plugins: [
+		tailwindcss(),
+        autoprefixer(),
+		react()
+	],
 
-  define: {
-    'import.meta.env.VITE_API_BASE_URL': JSON.stringify('http://buildflow.api')
-  },
+	assetsInclude: ['**/*.woff', '**/*.woff2'],
 
-  build: {
-    minify: 'terser',
-    terserOptions: { compress: true }
-  },
 
-  optimizeDeps: {
-    include: ['pdfjs-dist/build/pdf.mjs', 'pdfjs-dist/build/pdf.worker.mjs'],
-  },
+	build: {
+		minify: 'terser',
+		terserOptions: { compress: true }
+	},
 
+	optimizeDeps: {
+		include: ['pdfjs-dist/build/pdf.mjs', 'pdfjs-dist/build/pdf.worker.mjs'],
+	},
 })
