@@ -1,0 +1,96 @@
+.logo-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.logo-wrapper.forwards .lego-part {
+  animation-fill-mode: forwards;
+}
+
+.logo-wrapper.infinite .lego-part {
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+.logo-wrapper.animate-infinite .lego-part {
+  animation-iteration-count: infinite !important;
+  animation-direction: alternate;
+}
+
+.logo-wrapper.pulse {
+  animation: pulse 0.4s ease forwards;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.lego-part {
+  opacity: 0;
+  transform-origin: center;
+}
+
+/* Анимации по частям */
+.part-top-left {
+  animation: flyTopLeft 0.4s ease-out forwards;
+  animation-delay: 0.05s;
+}
+.part-top-right {
+  animation: flyTopRight 0.4s ease-out forwards;
+  animation-delay: 0.1s;
+}
+.part-right {
+  animation: flyRight 0.4s ease-out forwards;
+  animation-delay: 0.15s;
+}
+.part-bottom-right {
+  animation: flyBottomRight 0.4s ease-out forwards;
+  animation-delay: 0.2s;
+}
+.part-middle {
+  animation: flyCenter 0.4s ease-out forwards;
+  animation-delay: 0.25s;
+}
+.part-left {
+  animation: flyLeft 0.4s ease-out forwards;
+  animation-delay: 0.3s;
+}
+
+/* Анимации прилёта с отскоком */
+@keyframes flyTopLeft {
+  0% { transform: translate(-100px, -100px) scale(1.2); opacity: 0; }
+  70% { transform: translate(10px, 10px) scale(1.05); opacity: 1; }
+  100% { transform: translate(0, 0) scale(1); opacity: 1; }
+}
+@keyframes flyTopRight {
+  0% { transform: translate(100px, -100px) scale(1.2); opacity: 0; }
+  70% { transform: translate(-10px, 10px) scale(1.05); opacity: 1; }
+  100% { transform: translate(0, 0) scale(1); opacity: 1; }
+}
+@keyframes flyRight {
+  0% { transform: translate(150px, 0) scale(1.2); opacity: 0; }
+  70% { transform: translate(-5px, 0) scale(1.05); opacity: 1; }
+  100% { transform: translate(0, 0) scale(1); opacity: 1; }
+}
+@keyframes flyBottomRight {
+  0% { transform: translate(100px, 100px) scale(1.2); opacity: 0; }
+  70% { transform: translate(-10px, -10px) scale(1.05); opacity: 1; }
+  100% { transform: translate(0, 0) scale(1); opacity: 1; }
+}
+@keyframes flyCenter {
+  0% { transform: scale(0.2); opacity: 0; }
+  70% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes flyLeft {
+  0% { transform: translate(-150px, 0) scale(1.2); opacity: 0; }
+  70% { transform: translate(5px, 0) scale(1.05); opacity: 1; }
+  100% { transform: translate(0, 0) scale(1); opacity: 1; }
+}

@@ -9,27 +9,19 @@ const TaskList = observer(({ task, onEdit, onOpenSettings }) => {
   const { isInspector } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Получаем связанные данные
   const volumes = projectStore.getVolumesByTaskId(task.id);
   const requirements = projectStore.getRequirementsByTaskId(task.id);
   const executors = projectStore.getExecutorsByTaskId(task.id);
 
-  // Проверяем, что все объёмы выполнены
   const allVolumesDone = volumes.length > 0 && volumes.every(v => v.current_volume >= v.whole_volume);
-  // Проверяем, что все требования выполнены
-  //const allRequirementsDone = requirements.length > 0 && requirements.every(r => r.is_completed);
   const allRequirementsDone = requirements.every(r => r.is_completed);
-
-  // Флаг выполнения задачи
   const isCompleted = allVolumesDone && allRequirementsDone;
-
-  // Пометим в самом объекте (если нужно хранить флаг в сторе или поднять состояние наверх — адаптируйте)
   task.completed = isCompleted;
 
   const priorityLabel = {
-    0: 'Низкий',
-    1: 'Средний',
-    2: 'Высокий'
+    0: 'Low',
+    1: 'Middle',
+    2: 'High'
   }[task.priority];
 
   const toggleTask = () => setIsOpen(!isOpen);
@@ -48,39 +40,45 @@ const TaskList = observer(({ task, onEdit, onOpenSettings }) => {
     if (Object.keys(projectStore.users).length === 0) {
       projectStore.fetchAllUsers();
     }
-}, []);
+  }, []);
 
   return (
     <motion.div
-      className={`rounded-lg shadow-md p-4 mb-4
-        ${isCompleted ? 'bg-green-100 border border-green-400' : 'bg-white'}`}
+      layout
+      className={`rounded-lg shadow-lg p-6 mb-6 transition-colors duration-300
+        ${isCompleted ? 'bg-green-900 border border-green-600' : 'bg-white/5 border border-white/20'}
+      `}
     >
-      <div className="flex justify-between items-start">
-        <div>
-          <h3 className="text-lg font-semibold">
+      <div className="flex justify-between items-start gap-6">
+        <div className="max-w-[70%]">
+          <h3 className="text-3xl font-semibold text-white flex items-center gap-3 leading-tight">
             {task.name}
             {isCompleted && (
-              <span className="ml-2 px-2 py-1 bg-green-500 text-white text-xs rounded">Выполнено</span>
+              <span className="ml-3 px-3 py-1 bg-green-600 text-white text-sm rounded-lg font-semibold whitespace-nowrap select-none">
+                Done
+              </span>
             )}
           </h3>
-          <h3 className="text-sm font-medium">{task.description}</h3>
-          <p className="text-gray-600 text-sm">{task.end_date}</p>
+          <p className="text-sm text-gray-300 mt-2 leading-relaxed mb-4">{task.description}</p>
+          <p className="text-sm text-gray-500 mt-1">{task.end_date}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+        <div className="flex items-center gap-4 whitespace-nowrap">
+          <span className="px-3 py-1 bg-blue-800 text-blue-200 rounded-full text-sm font-semibold select-none">
             {priorityLabel}
           </span>
           <button
             onClick={() => onOpenSettings(task.id)}
-            className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full"
+            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-full transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label="Настройки задачи"
           >
             ⚙️
           </button>
           <button
             onClick={toggleTask}
-            className="p-1 hover:bg-gray-100 rounded-full"
+            className="p-2 hover:bg-white/10 rounded-full text-white transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label={isOpen ? "Свернуть детали задачи" : "Развернуть детали задачи"}
           >
-            {isOpen ? <IoIosArrowUp /> : <IoIosArrowDown />}
+            {isOpen ? <IoIosArrowUp size={24} /> : <IoIosArrowDown size={24} />}
           </button>
         </div>
       </div>
@@ -91,102 +89,102 @@ const TaskList = observer(({ task, onEdit, onOpenSettings }) => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="mt-4 space-y-4"
+            className="mt-6 space-y-6 overflow-hidden"
           >
-            {/* Объёмы */}
-            <div className="space-y-2">
-              <h4 className="font-medium">Объемы работ:</h4>
-              {volumes.map(vol => {
-                const done = vol.current_volume >= vol.whole_volume;
-                return (
-                  <div key={vol.id} className="bg-gray-50 p-2 rounded">
-                    <div className="flex justify-between mb-1">
-                      <span className={done ? 'line-through text-gray-500' : ''}>
-                        {vol.name} {done && <span className="text-green-600">✓</span>}
-                      </span>
-                      <span>
-                        {vol.current_volume}/{vol.whole_volume} {vol.metrics}
-                      </span>
+            {/* Volumes */}
+            <section>
+              <h4 className="text-3xl font-semibold text-gray-300 mt-3 mb-5 select-none">Scope of work:</h4>
+              <div className="space-y-4">
+                {volumes.map(vol => {
+                  const done = vol.current_volume >= vol.whole_volume;
+                  return (
+                    <div
+                      key={vol.id}
+                      className={`bg-white/10 p-4 rounded-lg border ${
+                        done ? 'border-green-600' : 'border-white/20'
+                      }`}
+                    >
+                      <div className="flex justify-between text-sm mb-3 font-medium text-gray-300 select-none">
+                        <span className={done ? 'line-through text-green-400' : ''}>
+                          {vol.name} {done && <span className="text-green-400">✓</span>}
+                        </span>
+                        <span>
+                          {vol.current_volume}/{vol.whole_volume} {vol.metrics}
+                        </span>
+                      </div>
+                      <div className="w-full h-3 rounded-full bg-white/20 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ease-in-out ${
+                            done ? 'bg-green-500' : 'bg-blue-600'
+                          }`}
+                          style={{ width: `${Math.min(vol.current_volume / vol.whole_volume, 1) * 100}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-2 bg-gray-200 rounded-full">
-                      <div
-                        className={`h-full rounded-full ${
-                          done ? 'bg-green-500' : 'bg-blue-500'
-                        }`}
-                        style={{
-                          width: `${Math.min(vol.current_volume / vol.whole_volume, 1) * 100}%`
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            </section>
 
-            {/* Требования */}
-            <div className="space-y-2">
-              <h4 className="font-medium">Требования:</h4>
-              {requirements.map(req => (
-                <label
-                  key={req.id}
-                  className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded"
-                >
-                  <input
-                    type="checkbox"
-                    checked={req.is_completed}
-                    onChange={() => handleRequirementToggle(req.id)}
-                    disabled={!isInspector}
-                    className="w-4 h-4"
-                  />
-                  <span
-                    className={
-                      req.is_completed ? 'line-through text-gray-500' : ''
-                    }
+            {/* Requirements */}
+            <section>
+              <h4 className="text-3xl font-semibold text-gray-300 mt-8 mb-5 select-none">Requirements:</h4>
+              <div className="space-y-3">
+                {requirements.map(req => (
+                  <label
+                    key={req.id}
+                    className="flex items-center gap-3 cursor-pointer select-none text-white hover:bg-white/10 rounded-md p-2 transition"
                   >
-                    {req.name}
-                  </span>
-                </label>
-              ))}
-            </div>
+                    <input
+                      type="checkbox"
+                      checked={req.is_completed}
+                      onChange={() => handleRequirementToggle(req.id)}
+                      disabled={!isInspector}
+                      className="w-5 h-5 rounded border border-white/40 accent-blue-600"
+                    />
+                    <span className={req.is_completed ? 'line-through text-green-400' : ''}>
+                      {req.name}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </section>
 
             {/* Исполнители */}
-            <div className="flex items-center gap-3">
+            <section className="flex flex-wrap items-center gap-6">
               {executors.slice(0, 2).map(ex => {
-                // Пытаемся получить пользователя из хранилища
                 const executorUser = projectStore.users[ex.user_id];
-                
-                // Если пользователь не найден, показываем заглушку
                 if (!executorUser) {
                   return (
-                    <div key={ex.id} className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                    <div
+                      key={ex.id}
+                      className="flex items-center gap-4 text-gray-400 select-none"
+                    >
+                      <div className="w-10 h-10 bg-gray-600 rounded-full flex items-center justify-center font-semibold text-lg">
                         ?
                       </div>
-                      <div className="text-sm text-gray-500">Загрузка...</div>
+                      Loading...
                     </div>
                   );
                 }
-
                 return (
-                  <div key={ex.id} className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center">
+                  <div key={ex.id} className="flex items-center gap-4 select-none">
+                    <div className="w-10 h-10 bg-blue-700 text-white rounded-full flex items-center justify-center font-semibold text-5xl">
                       {executorUser.lastName?.[0]?.toUpperCase()}
                     </div>
                     <div>
-                      <div className="text-sm font-medium">
+                      <div className="text-lg font-semibold text-white leading-tight">
                         {executorUser.firstName} {executorUser.lastName}
                       </div>
-                      <div className="text-xs text-gray-600">{ex.role}</div>
+                      <div className="text-sm text-blue-300 select-text">{ex.role}</div>
                     </div>
                   </div>
                 );
               })}
               {executors.length > 2 && (
-                <div className="text-sm text-gray-500">
-                  +{executors.length - 2} еще
-                </div>
+                <div className="text-sm text-gray-400 select-none">+{executors.length - 2} more</div>
               )}
-            </div>
+            </section>
           </motion.div>
         )}
       </AnimatePresence>

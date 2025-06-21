@@ -11,244 +11,200 @@ export const ModalCreateProject = observer(({ isOpen, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { projectStore } = useContext(StoreContext);
   const { user } = useAuth();
-  const [currentStep, setCurrentStep] = useState(1);
+  const [step, setStep] = useState(1);
   const [error, setError] = useState("");
 
-  // Step 1 Data
+  // Step 1
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [start_date, setStartDate] = useState(todayDate);
-  const [end_date, setEndDate] = useState(todayDate);
+  const [startDate, setStartDate] = useState(todayDate);
+  const [endDate, setEndDate] = useState(todayDate);
 
-  // Step 2 Data
-  const [stages, setStages] = useState([{ name: '', start_date: todayDate, end_date: todayDate }]);
+  // Step 2
+  const [stages, setStages] = useState([{ name: "", start_date: todayDate, end_date: todayDate }]);
 
-  const handleAddStage = () => {
-    setStages([...stages, { name: '', start_date: todayDate, end_date: todayDate }]);
+  const addStage = () => setStages([...stages, { name: "", start_date: todayDate, end_date: todayDate }]);
+  const removeStage = idx => setStages(stages.filter((_, i) => i !== idx));
+  const changeStage = (idx, field, v) => {
+    const copy = [...stages];
+    copy[idx][field] = v;
+    setStages(copy);
   };
 
-  const handleStageChange = (index, field, value) => {
-    const newStages = [...stages];
-    newStages[index][field] = value;
-    setStages(newStages);
-  };
-
-  const handleRemoveStage = (index) => {
-    const newStages = stages.filter((_, i) => i !== index);
-    setStages(newStages);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (currentStep === 1) {
-      if (!name.trim()) {
-        setError("Название проекта обязательно");
-        return;
-      }
-      setCurrentStep(2);
-      setError("");
-    } else {
-      setIsLoading(true);
-      try {
-        const newProject = await projectStore.addProject(
-          { name, description, start_date, end_date },
-          user.sub
-        );
-
-        for (const stage of stages) {
-          if (stage.name.trim()) {
-            await projectStore.addStage(newProject.id, stage);
-          }
-        }
-
-        onClose();
-        resetForm();
-      } catch (error) {
-        console.error("Ошибка создания проекта:", error);
-        setError("Ошибка при создании проекта");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  const resetForm = () => {
-    setCurrentStep(1);
-    setName("");
-    setDescription("");
-    setStages([{ name: '', start_date: todayDate, end_date: todayDate }]);
+  const resetAll = () => {
+    setStep(1);
+    setName(""); setDescription("");
+    setStartDate(todayDate); setEndDate(todayDate);
+    setStages([{ name: "", start_date: todayDate, end_date: todayDate }]);
     setError("");
   };
 
+  const submit = async e => {
+    e.preventDefault();
+    if (step === 1) {
+      if (!name.trim()) return setError("Project name is required");
+      setError(""); return setStep(2);
+    }
+    setIsLoading(true);
+    try {
+      const proj = await projectStore.addProject({ name, description, start_date: startDate, end_date: endDate }, user.sub);
+      for (const s of stages) {
+        if (s.name.trim()) await projectStore.addStage(proj.id, s);
+      }
+      onClose(); resetAll();
+    } catch {
+      setError("Failed to create project");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!isOpen) return null;
-
   return (
-    <div className="flex fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
-      <div className="bg-base-content text-base-100 w-full max-w-3xl border border-base-300 rounded-2xl shadow-2xl p-8 relative">
-
-        <h2 className="text-3xl font-bold text-center mb-6">
-          {currentStep === 1 ? 'Создание проекта — шаг 1 из 2' : 'Этапы проекта — шаг 2 из 2'}
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        className="w-full max-w-3xl bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl shadow-xl p-8 relative text-white"
+      >
+        <h2 className="text-3xl font-bold text-center mb-4">
+          {step === 1 ? "Create Project (Step 1 of 2)" : "Project Stages (Step 2 of 2)"}
         </h2>
-
-        {error && <div className="text-error mb-4 text-center">{error}</div>}
+        {error && <p className="text-red-400 text-center mb-4">{error}</p>}
 
         <AnimatePresence>
           {isLoading && (
             <motion.div
+              className="absolute inset-0 bg-white/30 flex items-center justify-center rounded-2xl"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-base-content/80 flex items-center justify-center rounded-2xl z-10"
             >
-              <motion.div
-                className="px-6 py-4 bg-primary text-base-100 rounded-lg shadow-xl text-xl font-semibold"
-                initial={{ scale: 0.9 }}
-                animate={{ scale: 1 }}
-                exit={{ scale: 0.9 }}
-              >
-                Создание проекта...
-              </motion.div>
+              <div className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold">
+                Creating...
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {currentStep === 1 ? (
-            <div className="flex flex-col gap-4">
-              <label className="flex flex-col text-lg">
-                <span className="ml-1">Название проекта:</span>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="input input-bordered border-base-300  bg-base-content mt-1"
-                  required
-                />
-              </label>
-
-              <label className="flex flex-col text-lg">
-                <span className="ml-1">Описание:</span>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full textarea textarea-bordered border-base-300 bg-base-content mt-1"
-                  rows={4}
-                />
-              </label>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <label className="flex flex-col text-lg">
-                  <span className="ml-1">Дата начала:</span>
+        <form onSubmit={submit} className="space-y-6">
+          {step === 1 ? (
+            <>
+              <div className="space-y-4">
+                <label className="flex flex-col">
+                  <span className="mb-1">Project Name</span>
                   <input
-                    type="date"
-                    value={start_date}
-                    min={todayDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="input input-bordered border-base-300  bg-base-content mt-1"
+                    type="text" value={name}
+                    onChange={e => setName(e.target.value)}
+                    className="bg-gray-600 text-white px-4 py-2 rounded-md outline-none"
+                    placeholder="Enter project name"
+                    required
                   />
                 </label>
-
-                <label className="flex flex-col text-lg">
-                  <span className="ml-1">Дата окончания:</span>
-                  <input
-                    type="date"
-                    value={end_date}
-                    min={start_date}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="input input-bordered border-base-300  bg-base-content mt-1"
+                <label className="flex flex-col">
+                  <span className="mb-1">Description</span>
+                  <textarea
+                    value={description}
+                    onChange={e => setDescription(e.target.value)}
+                    className="bg-gray-600 text-white px-4 py-2 rounded-md outline-none"
+                    rows={3}
+                    placeholder="Project description"
                   />
                 </label>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-6">
-              {stages.map((stage, index) => (
-                <div key={index} className="border border-base-300 rounded-xl p-4 relative">
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveStage(index)}
-                    className="absolute top-3 right-3 right-2 text-accent hover:text-accent"
-                  >
-                    <FiX size={20} />
-                  </button>
-                  <h4 className="text-xl font-semibold mb-2">Этап {index + 1}</h4>
-
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <label className="flex flex-col">
-                    Название этапа:
+                    <span className="mb-1">Start Date</span>
                     <input
-                      type="text"
-                      value={stage.name}
-                      onChange={(e) => handleStageChange(index, 'name', e.target.value)}
-                      className="input input-bordered border-base-300  bg-base-content mt-1"
+                      type="date" value={startDate}
+                      min={todayDate}
+                      onChange={e => setStartDate(e.target.value)}
+                      className="bg-gray-600 text-white px-4 py-2 rounded-md outline-none"
+                      required
                     />
                   </label>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <label className="flex flex-col">
-                      Дата начала:
-                      <input
-                        type="date"
-                        value={stage.start_date}
-                        onChange={(e) => handleStageChange(index, 'start_date', e.target.value)}
-                        className="input input-bordered border-base-300  bg-base-content mt-1"
-                      />
-                    </label>
-
-                    <label className="flex flex-col">
-                      Дата окончания:
-                      <input
-                        type="date"
-                        value={stage.end_date}
-                        min={stage.start_date}
-                        onChange={(e) => handleStageChange(index, 'end_date', e.target.value)}
-                        className="input input-bordered border-base-300  bg-base-content mt-1"
-                      />
-                    </label>
+                  <label className="flex flex-col">
+                    <span className="mb-1">End Date</span>
+                    <input
+                      type="date" value={endDate}
+                      min={startDate}
+                      onChange={e => setEndDate(e.target.value)}
+                      className="bg-gray-600 text-white px-4 py-2 rounded-md outline-none"
+                      required
+                    />
+                  </label>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {stages.map((s, i) => (
+                <div key={i} className="bg-slate-800 p-4 rounded-lg relative">
+                  <button
+                    type="button"
+                    onClick={() => removeStage(i)}
+                    className="absolute top-2 right-2 text-red-400"
+                  ><FiX /></button>
+                  <h4 className="font-semibold mb-2">Stage {i+1}</h4>
+                  <input
+                    type="text" value={s.name}
+                    onChange={e => changeStage(i, "name", e.target.value)}
+                    className="w-full bg-slate-700 text-white px-3 py-2 rounded-md mb-2 outline-none"
+                    placeholder="Stage name"
+                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <input
+                      type="date" value={s.start_date}
+                      onChange={e => changeStage(i, "start_date", e.target.value)}
+                      className="bg-slate-700 text-white px-3 py-2 rounded-md outline-none"
+                    />
+                    <input
+                      type="date" value={s.end_date}
+                      min={s.start_date}
+                      onChange={e => changeStage(i, "end_date", e.target.value)}
+                      className="bg-slate-700 text-white px-3 py-2 rounded-md outline-none"
+                    />
                   </div>
                 </div>
               ))}
-
               <button
                 type="button"
-                onClick={handleAddStage}
-                className="btn btn-outline btn-primary w-fit self-center"
+                onClick={addStage}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-md"
               >
-                <FiPlus className="mr-2" />
-                Добавить этап
+                <FiPlus /> Add Stage
               </button>
-            </div>
+            </>
           )}
 
-          <div className="flex justify-between mt-6">
-            {currentStep === 2 && (
+          <div className="flex justify-between mt-4">
+            {step === 2 && (
               <button
                 type="button"
-                onClick={() => setCurrentStep(1)}
-                className="btn btn-secondary"
+                onClick={() => setStep(1)}
+                className="px-4 py-2 bg-gray-600 rounded-md"
               >
-                Назад
+                Back
               </button>
             )}
-
-            <div className="flex gap-2 ml-auto">
+            <div className="ml-auto flex gap-2">
               <button
                 type="button"
                 onClick={onClose}
-                className="btn btn-ghost text-accent hover:border-accent hover:text-accent"
+                className="px-4 py-2 bg-transparent border border-white/30 rounded-md"
               >
-                Отмена
+                Cancel
               </button>
               <button
                 type="submit"
-                className="btn btn-primary text-base-content"
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md"
               >
-                {currentStep === 1 ? 'Далее' : 'Создать проект'}
+                {step === 1 ? "Next" : "Create Project"}
               </button>
             </div>
           </div>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 });
