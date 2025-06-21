@@ -104,6 +104,18 @@ canvas {
     height: 100vh;
 }
 
+.bg-login {
+  background-image: url(/public/bgLogin.jpg);
+  filter: blur(0px);
+  z-index: 0;
+}
+
+.bg-register {
+  background-image: url(/public/bgRegister.jpg);
+  filter: blur(0px);
+  z-index: 0;
+}
+
 #error-display {
     position: fixed;
     right: 0;

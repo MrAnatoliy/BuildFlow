@@ -40,6 +40,11 @@ const router = createBrowserRouter([
         index: true,
         element: <div>Home Page</div>,
       },
+      {
+        path: "/email",
+        index: true,
+        element: <EmailVerification />,
+      },
     ],
   },
 

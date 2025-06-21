@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import { observer } from "mobx-react-lite";
 import { StoreContext } from "../../provider/StoreContext";
 import { useAuth } from "../../provider/AuthProvider";
@@ -6,49 +6,38 @@ import { Link } from "react-router-dom";
 
 const ProjectList = observer(() => {
   const { projectStore } = useContext(StoreContext);
-  const { user, isManager, isExecutor } = useAuth();
+  const { isManager, isExecutor } = useAuth();
 
   useEffect(() => {
     const load = async () => {
-      if (isManager) {
-        await projectStore.fetchShortProjects();
-      } else if (isExecutor) {
-        await projectStore.fetchExecutorProjects();
-
-      }
+      if (isManager) await projectStore.fetchShortProjects();
+      else if (isExecutor) await projectStore.fetchExecutorProjects();
     };
     load();
   }, [projectStore, isManager, isExecutor]);
 
-  const projects = isManager 
-    ? projectStore.shortProjectList 
+  const projects = isManager
+    ? projectStore.shortProjectList
     : projectStore.executorProjectList;
 
-
-  if (projects.length === 0) {
-    return (
-      <div className="text-center text-gray-500 py-10">
-        У вас пока нет проектов.
-      </div>
-    );
+  if (!projects.length) {
+    return <div className="text-2xl text-gray-400 text-center py-10">You don't have any projects yet.</div>;
   }
 
   return (
-    <ul>
-      {projects?.map((project) => (
-          <li
-            key={project.id}
-            className="mb-4 p-4 border border-rounded border-base-300 rounded-[18px] bg-base-content hover:bg-blue-50"
-          >
-            <Link to={`/project/${project.id}`} className="block">
-              <h3 className="text-3xl font-semibold">{project.name}</h3>
-              <p className="text-2xl text-gray-600">{project.description}</p>
-              <div className="mt-2 text-2xl text-gray-500">
-                Создан: {project.createdAt ?? "неизвестно"}
-              </div>
-            </Link>
-          </li>
-        ))}
+    <ul className="space-y-4">
+      {projects.map((project) => (
+        <li
+          key={project.id}
+          className="p-5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 transition-all"
+        >
+          <Link to={`/project/${project.id}`} className="block space-y-1">
+            <h4 className="text-3xl font-bold text-white mb-2">{project.name}</h4>
+            <p className="text-gray-300 text-sm mb-4">{project.description}</p>
+            <span className="text-gray-400 text-xs">Created: {project.createdAt || "Unknown"}</span>
+          </Link>
+        </li>
+      ))}
     </ul>
   );
 });

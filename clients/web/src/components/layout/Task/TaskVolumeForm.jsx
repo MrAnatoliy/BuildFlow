@@ -26,7 +26,7 @@ const Slider = ({ value, max, onChange, disabled = false, className = '' }) => {
   return (
     <div
       ref={trackRef}
-      className={`relative h-2 rounded-lg ${disabled ? 'bg-gray-300' : 'bg-gray-200'} ${className}`}
+      className={`relative h-2 rounded-lg ${disabled ? 'bg-gray-400' : 'bg-gray-600'} ${className}`}
       style={{ userSelect: 'none', opacity: disabled ? 0.5 : 1 }}
     >
       <motion.div
@@ -48,7 +48,7 @@ const Slider = ({ value, max, onChange, disabled = false, className = '' }) => {
 const VolumeForm = ({ existingVol, taskId, onCreate, onUpdate, onCancel }) => {
   const { isManager } = useAuth();
 
-  const units = ['м³', 'кг', 'шт'];
+  const units = ['m³', 'kg', 'ps'];
   
   const [form, setForm] = useState({
     name: '',
@@ -126,12 +126,12 @@ const VolumeForm = ({ existingVol, taskId, onCreate, onUpdate, onCancel }) => {
       </h3>
 
       <div>
-        <label>Название объёма</label>
+        <label>Volume name</label>
         <input
           name="name"
           value={form.name}
           onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))}
-          className={`w-full p-2 border rounded ${!isManager ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+          className={`w-full p-2 bg-gray-600 rounded outline-none mt-2 ${!isManager ? 'cursor-not-allowed' : 'cursor-pointer'}`}
           disabled={!isManager}
           required
         />
@@ -139,7 +139,7 @@ const VolumeForm = ({ existingVol, taskId, onCreate, onUpdate, onCancel }) => {
 
       {/* Общий объём */}
       <div className="space-y-1">
-        <label>Общий объём</label>
+        <label>Total volume</label>
         <div className="flex items-center gap-2">
         <Slider
           value={form.whole_volume}
@@ -161,7 +161,7 @@ const VolumeForm = ({ existingVol, taskId, onCreate, onUpdate, onCancel }) => {
           placeholder="0"
           value={form.whole_volume === 0 ? '' : form.whole_volume}
           onChange={handleNumberChange}
-          className="w-24 p-2 border rounded ml-5"
+          className="w-24 p-2 border border-gray-600 rounded ml-5 outline-none"
           disabled={!isManager}
         />
         </div>
@@ -169,7 +169,7 @@ const VolumeForm = ({ existingVol, taskId, onCreate, onUpdate, onCancel }) => {
 
       {/* Текущий объём */}
       <div className="space-y-1">
-        <label>Текущий объём</label>
+        <label>Current volume</label>
         <div className="flex items-center gap-2">
           <Slider
             value={form.current_volume}
@@ -191,18 +191,18 @@ const VolumeForm = ({ existingVol, taskId, onCreate, onUpdate, onCancel }) => {
             value={form.current_volume === 0 ? '' : form.current_volume}
             onChange={handleNumberChange}
             disabled={form.whole_volume === 0}
-            className="w-24 p-2 border rounded ml-5"
+            className="w-24 p-2 border border-gray-600 rounded ml-5 outline-none"
           />
         </div>
       </div>
 
       <div>
-        <label>Ед. изм.</label>
+        <label>m.u.</label>
         <select
           name="metrics"
           value={form.metrics}
           onChange={e => setForm(prev => ({ ...prev, metrics: e.target.value }))}
-          className={`w-full p-2 border rounded ${!isManager ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+          className={`w-full p-2 bg-gray-600 text-white rounded outline-none mt-2 ${!isManager ? 'cursor-not-allowed' : 'cursor-pointer'}`}
           disabled={!isManager}
         >
           {units.map(u => <option key={u} value={u}>{u}</option>)}
@@ -213,9 +213,9 @@ const VolumeForm = ({ existingVol, taskId, onCreate, onUpdate, onCancel }) => {
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 bg-gray-200 rounded"
+          className="px-4 py-2 bg-red-400 rounded"
         >
-          Отмена
+          Cancel
         </button>
         <button
           type="submit"

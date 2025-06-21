@@ -1,31 +1,26 @@
-// src/pages/private/_Manager/DashboardView.jsx
 import React, { useContext, useEffect, useState, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
 import { StoreContext } from '../../../provider/StoreContext';
 import TaskList from '../../../components/layout/Task/TaskList';
 import TaskModal from '../TaskModal';
 import { TaskSettingsModal } from '../TaskSettingsModal';
+import { motion } from 'framer-motion';
 
 const DashboardView = observer(() => {
   const { projectId, stageId } = useParams();
   const { projectStore } = useContext(StoreContext);
-  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState(null);
   const [stage, setStage] = useState(null);
-
   const [tasksLoading, setTasksLoading] = useState(true);
   const [tasks, setTasks] = useState([]);
-
   const [isModalOpen, setModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
-
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   const [settingsTaskId, setSettingsTaskId] = useState(null);
 
-  // Загрузка проекта/этапа
   useEffect(() => {
     async function load() {
       setLoading(true);
@@ -37,7 +32,6 @@ const DashboardView = observer(() => {
     load();
   }, [projectId, stageId, projectStore]);
 
-  // Функция перезагрузки списка задач
   const reloadTasks = useCallback(async () => {
     setTasksLoading(true);
     await projectStore.fetchTasksByStageId(+stageId);
@@ -45,7 +39,6 @@ const DashboardView = observer(() => {
     setTasksLoading(false);
   }, [stageId, projectStore]);
 
-  // Первичная загрузка задач
   useEffect(() => {
     reloadTasks();
   }, [reloadTasks]);
@@ -65,77 +58,71 @@ const DashboardView = observer(() => {
     setSettingsTaskId(taskId);
     setSettingsOpen(true);
   };
+
   const closeSettings = () => {
-    setSettingsOpen(false);
     setSettingsTaskId(null);
+    setSettingsOpen(false);
   };
 
-  if (loading)   return <div>Загрузка проекта...</div>;
-  if (!project)  return <div>Проект не найден</div>;
-  if (!stage)    return <div>Этап не найден</div>;
+  if (loading) return <div className="text-white p-10 text-center">Loading...</div>;
 
   return (
     <>
-      <div className="wrapper flex flex-col justify-center items-start grad-base-100 min-h-screen p-8 sm:pl-[110px] gap-10 text-base-100">
-        <div className='w-[200px] flex flex-col ml-[10px] gap-2'>
-          <h1 className="text-6xl font-extrabold text-base-100 drop-shadow-md mb-[10px]">
-            {project.name}
+      <div className="min-h-screen w-full flex flex-col items-center justify-center px-6 py-12 bg-gradient-to-br from-slate-900 to-slate-950 text-white">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full max-w-6xl flex flex-col items-start gap-6"
+        >
+          <h1 className="ml-2 text-3xl font-extrabold drop-shadow-md">
+            Project: {project?.name}
           </h1>
-          <div className="devider w-full h-[1px] bg-base-300" />
-          <div className="text-3xl text-base-200">{stage.name}</div>
-          <div className="flex flex-col text-md text-gray-400 mt-2">
-            <span className="">Начало: {stage.start_date}</span>
-            <span className="">Окончание: {stage.end_date}</span>
-          </div>
-        </div>
+          <h2 className="ml-2 text-5xl font-semibold text-gray-400 mb-3">
+            Stage: {stage?.name}
+          </h2>
 
-        <div className="w-full max-w-5xl h-[600px] bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl p-6 sm:p-10 flex flex-col justify-between overflow-hidden relative">
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-row justify-between items-center">
-              <h1 className="text-4xl sm:text-5xl font-extrabold text-base-100 drop-shadow-md">Задачи этапа</h1>
-              <div
+          <motion.div
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="w-full bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl shadow-xl p-6"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-3xl font-semibold">Tasks of the stage</h3>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setModalOpen(true)}
-                className="hidden sm:flex items-center gap-3 cursor-pointer hover:scale-105 transition-transform"
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow"
               >
-                <span className="text-2xl text-primary font-semibold">+ Создать задачу</span>
-              </div>
+                <span className="text-3xl">Create a task</span>
+              </motion.button>
             </div>
 
-            <div className="devider w-full h-[1px] bg-base-300" />
-
-            <div className="w-full h-[400px] overflow-hidden">
-              <div className="w-full h-full overflow-y-auto pr-2 custom-scrollbar">
-                {tasksLoading ? (
-                  <div className="text-gray-400">Загрузка задач...</div>
-                ) : tasks.length === 0 ? (
-                  <div className="text-gray-500">Задачи отсутствуют</div>
-                ) : (
-                  <ul className="space-y-4">
-                    {tasks.map((task) => (
-                      <li key={task.id}>
-                        <TaskList
-                          task={task}
-                          onEdit={() => {
-                            setEditingTask(task);
-                            setModalOpen(true);
-                          }}
-                          onOpenSettings={() => openSettings(task.id)}
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+            <div className="h-[500px] overflow-y-auto pt-2 pr-2 custom-scrollbar">
+              {tasksLoading ? (
+                <div className="text-gray-400 text-center">Loading tasks...</div>
+              ) : tasks.length === 0 ? (
+                <div className="text-gray-400 text-center">There are no tasks</div>
+              ) : (
+                <ul className="space-y-4">
+                  {tasks.map(task => (
+                    <li key={task.id}>
+                      <TaskList
+                        task={task}
+                        onEdit={() => {
+                          setEditingTask(task);
+                          setModalOpen(true);
+                        }}
+                        onOpenSettings={() => openSettings(task.id)}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-
-            <div
-              onClick={() => setModalOpen(true)}
-              className="z-100 sm:hidden flex justify-center items-center gap-3 cursor-pointer pt-4"
-            >
-              <span className="text-xl text-primary font-semibold">+ Создать задачу</span>
-            </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
 
       <TaskModal
@@ -145,15 +132,15 @@ const DashboardView = observer(() => {
           setEditingTask(null);
         }}
         onSave={handleSave}
-        initialTask={editingTask || {}}
-        stageId={stageId}
+        initialTask={editingTask}
+        stageId={Number(stageId)}
       />
 
       <TaskSettingsModal
         isOpen={isSettingsOpen}
         taskId={settingsTaskId}
         onClose={closeSettings}
-        onVolumesChange={reloadTasks}     // <-- прокидываем сюда
+        onVolumesChange={reloadTasks}
       />
     </>
   );

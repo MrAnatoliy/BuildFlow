@@ -1,4 +1,3 @@
-// src/components/layout/Task/TaskEditForm.jsx
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../provider/AuthProvider';
 
@@ -37,76 +36,110 @@ const TaskEditForm = ({ task, onSave, onCancel }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-2">
-      {isManager 
-        ? <h3 className="text-5xl font-bold mb-7">Edit task</h3> 
-        : <h3 className="text-5xl font-bold mb-7">Task</h3>
-      }
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <h3 className="text-3xl font-bold mb-4 text-slate-100">
+        {isManager ? 'Edit Task' : 'Task Details'}
+      </h3>
+
       <div>
-        <label>Title</label>
+        <label className="block mb-1 text-slate-300">Title</label>
         <input 
           name="name" 
           value={form.name} 
           onChange={handleChange} 
-          className="w-full p-2 border border-gray-300 rounded-[12px]"
           disabled={!isManager}
-          required 
+          required
+          className={`w-full p-3 rounded-lg 
+            ${isManager 
+              ? 'bg-gray-600  text-slate-100 border border-slate-600' 
+              : 'bg-gray-600  text-slate-400 border border-slate-700 cursor-not-allowed'}`}
         />
       </div>
+
       <div>
-        <label>Description</label>
+        <label className="block mb-1 text-slate-300">Description</label>
         <textarea 
           name="description" 
           value={form.description} 
           onChange={handleChange} 
-          className="w-full p-2 border border-gray-300 rounded-[12px]"
+          rows={4}
           disabled={!isManager}
+          className={`w-full p-3 rounded-lg 
+            ${isManager 
+              ? 'bg-gray-600  text-slate-100 border border-slate-600' 
+              : 'bg-gray-600  text-slate-400 border border-slate-700 cursor-not-allowed'}`}
         />
       </div>
-      <div className="grid grid-cols-2 gap-4">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label>Start date</label>
+          <label className="block mb-1 text-slate-300">Start Date</label>
           <input 
             name="start_date" 
             type="date" 
             value={form.start_date} 
             onChange={handleChange} 
-            className="w-full p-2 border border-gray-300 rounded-[12px]"
             disabled={!isManager}
             required
+            className={`w-full p-3 rounded-lg 
+              ${isManager 
+                ? 'bg-gray-600  text-slate-100 border border-slate-600' 
+                : 'bg-gray-600  text-slate-400 border border-slate-700 cursor-not-allowed'}`}
           />
         </div>
         <div>
-          <label>Deadline</label>
+          <label className="block mb-1 text-slate-300">Deadline</label>
           <input 
             name="end_date" 
             type="date" 
             min={form.start_date} 
             value={form.end_date} 
             onChange={handleChange} 
-            className="w-full p-2 border border-gray-300 rounded-[12px]"
             disabled={!isManager}
             required
+            className={`w-full p-3 rounded-lg 
+              ${isManager 
+                ? 'bg-gray-600  text-slate-100 border border-slate-600' 
+                : 'bg-gray-600  text-slate-400 border border-slate-700 cursor-not-allowed'}`}
           />
         </div>
       </div>
+
       <div>
-        <label>Priority</label>
-        <select name="priority" value={form.priority} onChange={handleChange} className="w-full p-2 border border-gray-300 rounded-[12px]" disabled={!isManager}>
+        <label className="block mb-1 text-slate-300">Priority</label>
+        <select
+          name="priority"
+          value={form.priority}
+          onChange={handleChange}
+          disabled={!isManager}
+          className={`w-full p-3 rounded-lg 
+            ${isManager 
+              ? 'bg-gray-600  text-slate-100 border border-slate-600' 
+              : 'bg-gray-600  text-slate-400 border border-slate-700 cursor-not-allowed'}`}
+        >
           <option value={0}>Low</option>
           <option value={1}>Medium</option>
           <option value={2}>High</option>
         </select>
       </div>
-      {isManager 
-        ? <>
-            <div className="flex justify-end gap-2">
-              <button type="button" onClick={onCancel} className="px-4 py-2 bg-gray-200 rounded-full">Cancel</button>
-              <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-full">Update</button>
-            </div>
-          </>
-        : null
-      }
+
+      {isManager && (
+        <div className="flex justify-end gap-2 mt-6">
+          <button 
+            type="button" 
+            onClick={onCancel} 
+            className="px-4 py-2 bg-slate-600 text-slate-200 rounded-full"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            className="px-4 py-2 bg-blue-600 text-white rounded-full"
+          >
+            Update
+          </button>
+        </div>
+      )}
     </form>
   );
 };

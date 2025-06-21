@@ -34,7 +34,7 @@ const Sidebar = () => {
       initial="hidden"
       animate="show"
       variants={containerVariants}
-      className="fixed w-full sm:w-18 sm:h-full shadow-xl bg-base-content text-base-100 pl-[18px] pr-[18px] p-[10px] sm:p-[30px] z-100"
+      className="fixed w-full sm:w-18 sm:h-full shadow-xl bg-gradient-to-b from-slate-900 to-slate-950 text-white border-r border-r-slate-700/40 pl-[18px] pr-[18px] p-[10px] sm:p-[30px] z-100"
     >
       <ul className="w-full h-full flex flex-row sm:flex-col justify-center items-center">
         <ul className="w-full h-full flex flex-row sm:flex-col justify-start items-center">

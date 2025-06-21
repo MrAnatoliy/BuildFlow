@@ -3,73 +3,62 @@ import IconCreateProject from "../../components/icons/icons";
 import ProjectsList from "./ProjectList";
 import { ModalCreateProject } from "./ModalCreateProject";
 import { useAuth } from "../../provider/AuthProvider";
+import { motion } from "framer-motion";
 
 const Projects = () => {
-  const { user, role, isManager } = useAuth();
+  const { user, role } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const roleLabels = {
-    project_manager: 'Руководитель проекта',
-    executor: 'Исполнитель',
+    project_manager: 'Project manager',
+    executor: 'Executor',
   };
 
   return (
-    <>
-      <div className="wrapper flex flex-col justify-center items-start grad-base-100 min-h-screen p-8 sm:pl-[110px] gap-10 text-base-100">
-        <div className="flex flex-col ml-[10px] gap-2">
-          <h1 className="text-6xl font-extrabold text-base-100 drop-shadow-md">Hi, {user.given_name} 👋🏻</h1>
-          <h1 className="text-6xl font-extrabold text-base-100 drop-shadow-md">Your role: {roleLabels[role]}</h1>
-          <span className="text-gray-400">Take a look into your projects</span>
-        </div>
-        <div className="w-full max-w-5xl h-[600px] bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl shadow-2xl p-6 sm:p-10 flex flex-col justify-between overflow-hidden relative">
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-row justify-between items-center">
-              <h1 className="text-5xl font-extrabold text-base-100 drop-shadow-md">My projects</h1>
-              {isManager 
-                ? <>
-                    <div
-                      onClick={() => setIsModalOpen(true)}
-                      className="hidden sm:flex items-center gap-3 cursor-pointer hover:scale-105 transition-transform"
-                    >
-                      <IconCreateProject />
-                      <span className="text-2xl text-primary font-semibold">Create a new project</span>
-                    </div>
-                  </>
-                : null
-              }
-            </div>
+    <div className="min-h-screen w-full flex flex-col items-center justify-center px-6 py-12 bg-gradient-to-br from-slate-900 to-slate-950 text-white">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-6xl"
+      >
+        <h1 className="text-5xl sm:text-5xl font-bold ml-2 mb-2">
+          Hi, <span className="text-blue-400">{user.given_name}</span> 👋🏻
+        </h1>
+        <h2 className="text-4xl text-gray-400 ml-2 ">
+          Your role: {roleLabels[role] || <span className="text-gray-600">There is no role</span>}
+        </h2>
+        <p className="text-3xl text-gray-500 ml-2 mt-4">See the projects you're involved in</p>
+      </motion.div>
 
-            <div className="h-[1px] bg-base-300" />
-            <div className="w-full h-[450px] overflow-hidden">
-              <div className="w-full h-full overflow-y-auto pr-2 custom-scrollbar">
-                <ProjectsList />
-              </div>
-            </div>
-              {isManager 
-                ? <>
-                    <div
-                      onClick={() => setIsModalOpen(true)}
-                      className="z-100 sm:hidden flex justify-center items-center gap-3 cursor-pointer pt-4"
-                    >
-                      <IconCreateProject />
-                      <span className="hidden sm:block text-xl text-primary font-semibold">Create a new project</span>
-                    </div>
-                  </>
-                : null
-              }
-          </div>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.97 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.2 }}
+        className="w-full max-w-6xl mt-10 bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl shadow-xl p-6"
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-3xl font-semibold">My projects</h3>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow"
+          >
+            <IconCreateProject className="w-5 h-5" />
+            <span className="text-3xl">Сreate a project</span>
+          </motion.button>
         </div>
-      </div>
-      {isManager 
-        ? <>
-            <ModalCreateProject 
-              isOpen={isModalOpen} 
-              onClose={() => setIsModalOpen(false)} 
-            />
-          </>
-        : null}
 
-    </>
+        <div className="h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+          <ProjectsList />
+        </div>
+      </motion.div>
+
+      <ModalCreateProject
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
+    </div>
   );
 };
 

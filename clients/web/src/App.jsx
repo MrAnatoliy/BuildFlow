@@ -8,6 +8,7 @@ import Modal from 'react-modal';
 
 import './assets/css/tailwindcss.css';
 import './assets/css/app.css';
+import PageLoader from './components/ui/PageLoader/PageLoader';
 
 const App = () => {
 
@@ -18,6 +19,7 @@ const App = () => {
  	return (
 		<>
 			<AuthProvider>
+				<PageLoader />
 				<RouterProvider router={router} />
 				<ErrorDisplay />
 			</AuthProvider>	

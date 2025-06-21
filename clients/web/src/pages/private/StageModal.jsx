@@ -1,73 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import Modal from 'react-modal';
+import React, { useState, useEffect } from "react";
+import Modal from "react-modal";
 
-const today = new Date().toISOString().slice(0, 10);
+const today = new Date().toISOString().split("T")[0];
 
 const StageModal = ({ isOpen, onClose, onSave, initialStage = {} }) => {
   const [form, setForm] = useState({
-    name: '',
-    description: '',
-    budget: 0,
-    start_date: '',
-    end_date: '',
+    name: "", description: "", budget: 0,
+    start_date: today, end_date: today
   });
 
   useEffect(() => {
     if (isOpen) {
       setForm({
-        name: initialStage.name || '',
-        description: initialStage.description || '',
+        name: initialStage.name || "",
+        description: initialStage.description || "",
         budget: initialStage.budget || 0,
         start_date: initialStage.start_date || today,
-        end_date: initialStage.end_date || today,
+        end_date: initialStage.end_date || today
       });
     }
   }, [isOpen, initialStage]);
 
-  const handleChange = (e) => {
+  const change = e => {
     let { name, value } = e.target;
-
-    if (name === 'budget') {
-      if (value === '') {
-        setForm((prev) => ({ ...prev, [name]: '' }));
-        return;
-      }
-      if (/^\d+$/.test(value)) {
-        const noLeadingZeros = value.replace(/^0+/, '');
-        setForm((prev) => ({
-          ...prev,
-          [name]: noLeadingZeros === '' ? '0' : noLeadingZeros,
-        }));
+    if (name === "budget") {
+      if (value === "" || /^\d+$/.test(value)) {
+        value = value.replace(/^0+/, "") || "0";
+        setForm(f => ({ ...f, [name]: value }));
       }
     } else {
-      setForm((prev) => ({ ...prev, [name]: value }));
+      setForm(f => ({ ...f, [name]: value }));
     }
   };
 
-  const handleSave = () => {
-    if (!form.name.trim()) {
-      alert('Название этапа обязательно');
-      return;
-    }
-    if (form.end_date < form.start_date) {
-      alert('Дата окончания не может быть раньше даты начала');
-      return;
-    }
-
-    const budgetNum = Number(form.budget);
-    if (isNaN(budgetNum)) {
-      alert('Бюджет должен быть числом');
-      return;
-    }
-
-    onSave?.({
-      name: form.name.trim(),
-      description: form.description.trim(),
-      budget: budgetNum,
-      start_date: form.start_date,
-      end_date: form.end_date,
-    });
-
+  const save = () => {
+    if (!form.name.trim()) return alert("Stage name is required");
+    if (form.end_date < form.start_date) return alert("End date must be ≥ start date");
+    const b = Number(form.budget);
+    if (isNaN(b)) return alert("Budget must be a number");
+    onSave({ ...form, budget: b });
     onClose();
   };
 
@@ -76,90 +47,45 @@ const StageModal = ({ isOpen, onClose, onSave, initialStage = {} }) => {
       isOpen={isOpen}
       onRequestClose={onClose}
       ariaHideApp={false}
-      contentLabel="Создать или редактировать этап"
-      className="mt-50 bg-base-content border  border-base-300 text-base-1 p-8 rounded-2xl shadow-2xl outline-none"
+      className="w-full max-w-3xl bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl shadow-xl p-8 mx-auto mt-20 text-white outline-none"
       overlayClassName="fixed inset-0 bg-black/50 flex justify-center items-start z-50"
     >
-      <h2 className="text-center text-4xl font-bold mb-6">{initialStage.name ? 'Редактировать этап' : 'Создать этап'}</h2>
-
-      <div className="flex flex-col gap-4">
-        <label className="flex flex-col">
-          <span className="text-3xl mb-1 ml-1">Название этапа:</span>
+      <h2 className="text-3xl font-bold text-center mb-4">
+        {initialStage.name ? "Edit Stage" : "Create Stage"}
+      </h2>
+      <div className="space-y-4">
+        <input
+          name="name" value={form.name} onChange={change}
+          className="w-full bg-gray-600 text-white px-4 py-2 rounded-md outline-none"
+          placeholder="Stage name"
+        />
+        <textarea
+          name="description" value={form.description} onChange={change}
+          className="w-full bg-gray-600 text-white px-4 py-2 rounded-md outline-none"
+          rows={3} placeholder="Description"
+        />
+        <input
+          name="budget" type="number" value={form.budget} onChange={change}
+          className="w-full bg-gray-600 text-white px-4 py-2 rounded-md outline-none"
+          placeholder="Budget"
+        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
-            type="text"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            className="input input-bordered border-base-300 bg-base-content text-base-100 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Введите название"
+            name="start_date" type="date" value={form.start_date} onChange={change}
+            className="bg-gray-600 text-white px-4 py-2 rounded-md outline-none"
           />
-        </label>
-
-        <label className="flex flex-col">
-          <span className="text-3xl mb-1 ml-1">Описание этапа:</span>
-          <textarea
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            rows={3}
-            className="textarea textarea-bordered border-base-300 bg-base-content text-base-100 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Описание"
-          />
-        </label>
-
-        <label className="flex flex-col">
-          <span className="text-3xl mb-1 ml-1">Бюджет:</span>
           <input
-            type="number"
-            name="budget"
-            value={form.budget}
-            onChange={handleChange}
-            min={0}
-            step={1000000}
-            className="input input-bordered border-base-300 bg-base-content text-base-100 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="0"
+            name="end_date" type="date" value={form.end_date} min={form.start_date} onChange={change}
+            className="bg-gray-600 text-white px-4 py-2 rounded-md outline-none"
           />
-        </label>
-
-        <div className="flex flex-col gap-4">
-          <label className="flex flex-row flex-1 gap-3">
-            <span className="flex flex-1 justify-start items-center text-2xl mb-1">Дата начала:</span>
-            <input
-              type="date"
-              name="start_date"
-              value={form.start_date}
-              min={today}
-              onChange={handleChange}
-              className="input input-bordered border-base-300 bg-base-content text-base-100 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </label>
-
-          <label className="flex flex-row flex-1 gap-3">
-            <span className="flex flex-1 justify-start items-center text-2xl mb-1">Дата окончания:</span>
-            <input
-              type="date"
-              name="end_date"
-              value={form.end_date}
-              min={form.start_date || today}
-              onChange={handleChange}
-              className="input input-bordered border-base-300 bg-base-content text-base-100 rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-          </label>
         </div>
       </div>
-
-      <div className="flex justify-end gap-4 mt-8">
-        <button
-          onClick={onClose}
-          className="px-5 py-2 bg-accent hover:bg-red-600 text-white rounded-xl transition"
-        >
-          Отмена
+      <div className="flex justify-end gap-4 mt-6">
+        <button onClick={onClose} className="px-4 py-2 bg-gray-600 rounded-md">
+          Cancel
         </button>
-        <button
-          onClick={handleSave}
-          className="px-5 py-2 bg-primary hover:bg-primary/80 text-white rounded-xl transition"
-        >
-          Сохранить
+        <button onClick={save} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-md">
+          Save
         </button>
       </div>
     </Modal>
